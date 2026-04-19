@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class JoystickInputReader : MonoBehaviour
+public class JoystickInputReader : MonoBehaviour, IJoystickInputReader
 {
     [Header("Input Reader References")]
     [SerializeField] private InputActionReference moveAction;
@@ -24,8 +24,12 @@ public class JoystickInputReader : MonoBehaviour
         }
     }
     private void OnEnable()
-    {if (_moveInputAction == null)
+    {
+        if (_moveInputAction == null)
+        {
+            Debug.Log($"{nameof(JoystickInputReader)}: Input Action Reference is not assigned");
             return;
+        }
         
         _moveInputAction.Enable();
         _moveInputAction.performed += OnMove;

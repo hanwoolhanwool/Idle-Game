@@ -20,4 +20,4 @@ MonoBehaviour:
   CritDamage: 0
   MoveSpeed: 10
   InputDeadZone: 0.1
-  useSpriteFlip: 0
+  useSpriteFlip: 1
