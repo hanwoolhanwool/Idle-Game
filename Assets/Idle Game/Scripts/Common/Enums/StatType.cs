@@ -1,0 +1,23 @@
+public enum StatType
+{
+    MaxHp,
+    HpRegen,
+    MaxMp,
+    MpRegen,
+    AttackPower,
+    AttackSpeed,
+    CritChance,
+    CritDamage,
+    MoveSpeed,
+    Defense,
+    DamageReduction,
+    LifeSteal,
+    Range,
+    CooldownReduction,
+    Accuracy,
+    Evasion,
+    ProjectileCount,
+    PickupRange,
+    ExpGainRate,
+    GoldGainRate
+}
