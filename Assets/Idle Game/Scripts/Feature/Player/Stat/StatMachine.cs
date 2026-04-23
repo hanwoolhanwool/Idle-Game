@@ -48,7 +48,7 @@ public sealed class StatMachine
         return _cachedSnapshot;
     }
 
-    public void SetBase(StatType statType, float value)
+    public void UpdateBaseValue(StatType statType, float value)
     {
         var def = StatCatalog.Get(statType);
         var clamped = def.Clamp(value);

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public sealed class TimeBuffData
+public sealed class TimedBuffData
 {
     public string BuffId;
     public float Duration;

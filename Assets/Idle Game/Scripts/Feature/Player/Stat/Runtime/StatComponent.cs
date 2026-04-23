@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public sealed class PlayerStatComponent
@@ -67,15 +68,66 @@ public sealed class PlayerStatComponent
         
         return attack *((1f - critChance) + (critChance * critDamage));
     }
-    //
-    // public float ComputeDps()
-    // {
-    //     
-    // }
-
-    private void HandleStateChanged(StatType arg1, float arg2)
+    
+    public float ComputeDps()
     {
-        throw new System.NotImplementedException();
+        float perHit = ComputeFinalDamagePerHit();
+        float attackSpeed = Stats.GetFinal(StatType.AttackSpeed);
+        return perHit * attackSpeed;
+    }
+
+    #region buff
+    // 버프는 반드시 리펙터링을 거쳐야한다.
+    public void ApplyTimeBuff(TimedBuffData buffData)
+    {
+        foreach (var modifier in buffData.Modifiers)
+            Stats.AddModifier(modifier);
+    }
+
+    public void RemoveTimeBuffByBuffId(TimedBuffData buffData)
+    {
+        Stats.RemoveModifierBySourceId(buffData.BuffId);
+    }
+    #endregion
+
+    private void ApplyProgression(PlayerProgressionData progression)
+    {
+        Stats.UpdateBaseValue(StatType.MaxHp, progression.BaseHp);
+        Stats.UpdateBaseValue(StatType.MpRegen, progression.BaseMp);
+        Stats.UpdateBaseValue(StatType.AttackPower, progression.BaseAttakPower);
+        Stats.UpdateBaseValue(StatType.AttackSpeed, progression.BaseAttakSpeed);
+        Stats.UpdateBaseValue(StatType.MoveSpeed, progression.BaseMoveSpeed);
+        Stats.UpdateBaseValue(StatType.Defense, progression.BaseDefence);
+    }
+    // 재공부
+    // 리펙터링 필수
+    // 현재 장비에 대한 구분이 존재하지 않는다. 따라서 장비를 구분해주는 Machin 또는 controller가 필요한상태
+    private void ApplyEquipments(IEnumerable<EquipmentRuntimeData> equipments)
+    {
+        if (equipments == null) return;
+        foreach (var equipment in equipments)
+        {
+            foreach (var modifier in equipment.Modifiers)
+                Stats.AddModifier(modifier);
+        }
+    }
+
+    private void RefillResourceToCapOnInitialize()
+    {
+        _currentHp = Stats.GetFinal(StatType.MaxHp);
+        _currentMp = Stats.GetFinal(StatType.MaxMp);
+    }
+    private void HandleStateChanged(StatType statType, float value)
+    {
+        switch (statType)
+        {
+            case StatType.MaxHp:
+                _currentHp = Math.Min(value, _currentHp);
+                break;
+            case StatType.MaxMp:
+                _currentMp = Math.Min(value, _currentMp);
+                break;
+        }
     }
 
     private static float Clamp(float value, float min, float max)
