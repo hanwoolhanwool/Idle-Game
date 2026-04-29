@@ -37,6 +37,12 @@ public class JoystickInputReader : MonoBehaviour, IJoystickInputReader
     }
     private void OnDisable()
     {
+        if (_moveInputAction == null)
+        {
+            Debug.Log($"{nameof(JoystickInputReader)}: Input Action Reference is not assigned");
+            return;
+        }
+        
         _moveInputAction.performed -= OnMove;
         _moveInputAction.canceled -= OnMoveCanceled;
         _moveInputAction.Disable();

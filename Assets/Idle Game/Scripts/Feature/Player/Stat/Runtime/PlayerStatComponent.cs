@@ -40,10 +40,10 @@ public sealed class PlayerStatComponent
     {
         if (incomingDamage <= 0f) return;
         float defense = Stats.GetFinal(StatType.Defense);
-        float damagewReduction = Stats.GetFinal(StatType.DamageReduction);
+        float damageReduction = Stats.GetFinal(StatType.DamageReduction);
 
         float reducedByDefense = incomingDamage * (100f / (100f + Math.Max(0f, defense)));
-        float reducedByRate = reducedByDefense * (1f - damagewReduction);
+        float reducedByRate = reducedByDefense * (1f - damageReduction);
         _currentHp = Math.Max(0f, _currentHp - reducedByRate);
     }
 
