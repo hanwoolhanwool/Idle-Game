@@ -272,3 +272,74 @@ class PlayerSkillController {
 | 수정 | (선택) `PlayerStateID.cs` | `Skill` 상태 신설 검토 |
 | 신규 | UI `SkillButton.cs` | `Features/Player/Presentation` 또는 `UI` |
 ```
+
+---
+
+## 11. 구현 진행 현황 (2026-07)
+
+> 구현 도중 **게임 장르를 "순수 방치형 + 능동 전투(보스/레이드/PvP) 하이브리드"로 확정**함에 따라, 원래 로드맵(STEP 1~8)을 방치형 방향으로 재구성함(STEP N′). 핵심 판단: 상태 머신을 새로 짜지 않고 **"제어 주체(플레이어/AI)"를 추상화**해 입력 소스만 교체하면 두 모드를 모두 지원한다.
+
+### 11.1 완료 (컴파일·플레이 검증됨)
+
+| 단계 | 산출물 | 위치 | 비고 |
+|------|--------|------|------|
+| STEP 1 | `SkillType`, `SkillDefinition` | `Shared/Enums`, `Data/Definitions` | `CanMoveWhileCasting` 필드 추가(무빙 공격 지원) |
+| STEP 2 | `SkillCooldownTracker` | `Features/Player/Skills` | 순수 C#, `ListPool` 기반 Tick |
+| STEP 3 | `IDamageable`, `SkillContext`, `ISkillEffect`, `AttackSkillEffect`, `BuffSkillEffect` | `Skills/Contracts·Core·Effects` | 전략 패턴 |
+| STEP 4 | `SkillLoadout` | `Skills/Core` | 6슬롯, 슬롯 0 고정 |
+| STEP 5 | `PlayerSkillController` | `Skills` | 판정순서·시전타이머·R5. `TryUseSkill(slot, IDamageable target=null)` |
+| STEP 6′ | `IMoveInputSource`(구 `IJoystickInputReader`), `PlayerMovementController` DIP화 | `StateMachine/Contracts`, `Movement` | 입력 소스 교체 가능 |
+| STEP 7′ | `Idle⇄Move⇄Attack` 전이, `IPlayerMovementController` 확장 | `StateMachine/States`, `Contracts` | 이동 차단은 컨트롤러가 스킬 속성 기반 |
+| STEP 9′ | `ICastGate`, `PlayerStateMachineCastGate`, `PlayerRoot` 조립 | `Skills/Contracts·Adapters`, `Composition` | 시전 진실=상태 머신(이중 진실 제거). 능동 모드 동작 |
+| STEP 8′ | `EnemyUnit`, `EnemyRegistry`, `ITargetProvider`/`NearestEnemyTargetProvider`, `AutoBattleInputSource`, `AutoCastController` | `Features/Enemy`, `Input`, `Skills` | 방치 전투 루프(탐색→접근→자동공격→처치→다음, 적 없으면 제자리) |
+| 능동 UI | `SkillButton` + `PlayerRoot` 바인딩 | `Presentation`, `Composition` | 버튼 클릭 → `TryUseSkill(slot)`. 기본 공격 동작 확인 |
+
+### 11.2 남은 챕터
+
+- **능동 타겟팅** — 능동 공격 버튼이 실제 적을 때리도록(현재 `target=null`이라 공격 스킬은 로그만).
+- **모드 전환** — 방치↔능동 입력 소스 런타임 스왑(보스/레이드/PvP 진입 시).
+- **피격 시스템** — 피격 → `Hit` 전이 + 시전 취소(`CancelCast`/`NotifyHit`/Tick 안전망). 정책: 스킬별 `InterruptibleByHit`. (설계만 완료, 미구현 — "좀비 시전" 문제 잠복)
+- **애니메이션** — `IPlayerAnimationController`(빈 인터페이스) 채우기.
+- **본격 적 시스템** — 스폰/웨이브, `EnemyStat` 기반 스탯, 드롭, 적 반격(현재 최소 스텁).
+- **오프라인 진행** — 방치형 핵심(시간 기반 시뮬레이션).
+- **편성 데이터 분리** — 아래 12장(다음 챕터).
+
+---
+
+## 12. 다음 챕터: `SkillLoadoutConfig` (편성 데이터 분리)
+
+### 12.1 문제
+현재 슬롯 편성이 `PlayerRoot`의 두 필드(`basicAttack`, `equippedSkills[]`)로 **오브젝트에 박혀** 있다. 재사용·교체·저장이 어렵고, 편성이 플레이어 오브젝트에 종속된다.
+
+### 12.2 목표
+6슬롯 편성을 **하나의 ScriptableObject 에셋(`SkillLoadoutConfig`)**으로 분리한다. `PlayerRoot`는 이 config **하나만** 참조한다.
+
+```
+[변경 전]  PlayerRoot ─ basicAttack, equippedSkills[]   (오브젝트에 박힘)
+[변경 후]  PlayerRoot ─ SkillLoadoutConfig (에셋)  ─ 슬롯 0~5 스킬 지정
+```
+
+### 12.3 이점 (SOLID·확장)
+- **데이터 분리(SRP)**: 편성=데이터, 조립=`PlayerRoot`. 역할이 갈린다.
+- **프리셋(OCP)**: "전사용/마법사용" 편성 에셋을 여러 개 만들어 교체 가능.
+- **확장 기반**: 세이브/로드(어떤 config를 썼나), 런타임 편성 UI(config 복제·수정 → `SkillLoadout.TryEquip`)의 토대.
+
+### 12.4 Teaching Mode 로드맵
+- **L-A — 데이터**: `SkillLoadoutConfig : ScriptableObject` 작성.
+  - 필드: `SkillDefinition basicAttack`(슬롯 0), `SkillDefinition[] equippedSkills`(슬롯 1~5).
+  - `[CreateAssetMenu]`로 에셋 생성. 슬롯 0 고정 규칙은 기존 `SkillLoadout` 생성자에서 유지.
+  - 검증: 에디터에서 편성 에셋 생성.
+- **L-B — 조립 교체**: `PlayerRoot`가 `basicAttack`/`equippedSkills` 대신 `SkillLoadoutConfig loadoutConfig` 하나를 참조하도록 수정. `ComposeSkills`에서 `config.basicAttack`·`config.equippedSkills` 사용.
+  - 검증: 컴파일.
+- **L-C — 씬**: 편성 에셋 생성 → 슬롯별 스킬 지정 → `PlayerRoot`의 `Loadout Config`에 연결 → 플레이로 각 슬롯 발동 확인.
+
+### 12.5 신규/수정 파일
+| 구분 | 파일 | 위치 |
+|------|------|------|
+| 신규 | `SkillLoadoutConfig.cs` | `Data/Definitions` |
+| 수정 | `PlayerRoot.cs` | `basicAttack`/`equippedSkills` → `loadoutConfig` 참조 |
+
+### 12.6 향후 확장 여지 (지금 만들지 않되 막지 않을 것)
+- 슬롯 편성 UI(드래그&드롭) → `SkillLoadout.TryEquip`(이미 구현) 재사용.
+- 세이브/로드 시 슬롯의 `SkillId`만 직렬화 → 로드 시 `TryEquip`으로 복원.
+- 런타임 편성 변경 시 config를 복제(원본 불변 유지)해 수정.
