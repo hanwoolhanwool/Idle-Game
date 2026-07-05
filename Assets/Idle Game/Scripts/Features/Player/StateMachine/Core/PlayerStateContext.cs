@@ -2,7 +2,7 @@ using UnityEngine;
 public sealed class PlayerStateContext
 {
     public Transform Transform { get; }
-    public IJoystickInputReader JoystickInputReader { get; }
+    public IMoveInputSource MoveInputSource { get; }
     public IPlayerMovementController PlayerMovementController { get; }
     public IPlayerAnimationController PlayerAnimationController { get; }
     
@@ -15,12 +15,12 @@ public sealed class PlayerStateContext
 
     public PlayerStateContext
     (Transform transform,
-        IJoystickInputReader joystickInputReader,
+        IMoveInputSource moveInputSource,
         IPlayerMovementController playerMovementController,
         IPlayerAnimationController playerAnimationController)
     {
         Transform = transform;
-        JoystickInputReader = joystickInputReader;
+        MoveInputSource = moveInputSource;
         PlayerMovementController = playerMovementController;
         PlayerAnimationController = playerAnimationController;
     }

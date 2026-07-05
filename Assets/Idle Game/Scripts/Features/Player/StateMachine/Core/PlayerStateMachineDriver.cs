@@ -8,7 +8,7 @@ public sealed class PlayerStateMachineDriver : MonoBehaviour
     [SerializeField] private MonoBehaviour playerMovementController;
     [SerializeField] private MonoBehaviour playerAnimationController;
     
-    private IJoystickInputReader _inputReader;
+    private IMoveInputSource _inputReader;
     private IPlayerAnimationController _animationController;
     private IPlayerMovementController _movementController;
     
@@ -18,12 +18,12 @@ public sealed class PlayerStateMachineDriver : MonoBehaviour
 
     private void Awake()
     {
-        _inputReader = joystickInputReader as IJoystickInputReader;
+        _inputReader = joystickInputReader as IMoveInputSource;
         _movementController = playerMovementController as IPlayerMovementController;
         _animationController = playerAnimationController as IPlayerAnimationController;
         
         if(_inputReader == null)
-            Debug.LogError($"{name}: joystickInputReader must implement IJoystickInputReader", this);
+            Debug.LogError($"{name}: joystickInputReader must implement IMoveInputSource", this);
         if(_animationController == null)
             Debug.LogError($"{name}: animationController must implement IPlayerAnimationController", this);
         if(_movementController == null)

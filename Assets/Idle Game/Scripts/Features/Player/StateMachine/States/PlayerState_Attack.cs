@@ -9,7 +9,6 @@ public sealed class PlayerState_Attack : PlayerStateBase
 
     public override void Enter()
     {
-        
     }
 
     public override void FixedTick(float deltaTime)
@@ -19,6 +18,5 @@ public sealed class PlayerState_Attack : PlayerStateBase
 
     public override void Exit()
     {
-        
     }
 }
