@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-public sealed class PlayerStatComponent
+public sealed class PlayerStatComponent : ITickable
 {
     public readonly StatMachine Stats = new();
 

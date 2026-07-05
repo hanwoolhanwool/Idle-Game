@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Pool;
 
-public sealed class PlayerBuffController
+public sealed class PlayerBuffController : ITickable
 {
     private readonly PlayerStatOrchestrator _orchestrator;
     private readonly Dictionary<string, BuffRuntimeInstance> _activeBuffs = new ();
