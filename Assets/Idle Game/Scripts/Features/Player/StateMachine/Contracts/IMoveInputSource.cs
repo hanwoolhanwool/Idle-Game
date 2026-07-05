@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface IJoystickInputReader
+public interface IMoveInputSource
 {
     Vector2 Move { get; }
 }

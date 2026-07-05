@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class JoystickInputReader : MonoBehaviour, IJoystickInputReader
+public class JoystickInputReader : MonoBehaviour, IMoveInputSource
 {
     [Header("Input Reader References")]
     [SerializeField] private InputActionReference moveAction;

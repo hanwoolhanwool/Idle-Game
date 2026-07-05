@@ -7,12 +7,12 @@ using UnityEngine.InputSystem;
 public class PlayerMovementController : MonoBehaviour, IPlayerMovementController
 {
     [Header("References")]
-    [SerializeField] private JoystickInputReader inputReader;
-    [SerializeField] private SpriteRenderer  spriteRenderer;
-    
+    [SerializeField] private MonoBehaviour inputSourceBehaviour;
+    [SerializeField] private SpriteRenderer spriteRenderer;
     [Header("Move Settings")]
     [SerializeField] private PlayerStat playerStat;
     
+    private IMoveInputSource _inputSource;
     private Rigidbody2D _rigidbody2D;
     private Vector2 _moveInput;
     private Vector2 _moveDirection;
@@ -25,9 +25,10 @@ public class PlayerMovementController : MonoBehaviour, IPlayerMovementController
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
 
-        if (inputReader == null)
+        _inputSource = inputSourceBehaviour as IMoveInputSource;
+        if (_inputSource == null)
         {
-            Debug.LogError($"{nameof(inputReader)} is null!");
+            Debug.LogError($"{nameof(inputSourceBehaviour)} must implement IMoveInputSource!");
             enabled = false;
             return;
         }
@@ -63,7 +64,7 @@ public class PlayerMovementController : MonoBehaviour, IPlayerMovementController
 
     private void ReadInput()
     {
-        _moveInput = inputReader.Move;
+        _moveInput = _inputSource.Move;
         if (_moveInput.sqrMagnitude < playerStat.InputDeadZone * playerStat.InputDeadZone)
         {
             _moveInput = Vector2.zero;
