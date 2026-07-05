@@ -1,0 +1,27 @@
+# <type>(<scope>): <subject>   (50자 이내 권장, 명령형 현재시제, 끝에 마침표 X)
+#
+# ┌ type ─────────────────────────────────────────────┐
+# │ feat     기능 추가                                 │
+# │ fix      버그 수정                                 │
+# │ refactor 동작 변화 없는 구조 개선                  │
+# │ perf     성능 개선                                 │
+# │ chore    빌드·설정·패키지·기타                     │
+# │ docs     문서                                      │
+# │ test     테스트                                    │
+# │ style    포맷팅·네이밍(로직 변화 없음)             │
+# │ build    빌드 시스템                               │
+# │ ci       CI/CD                                     │
+# └───────────────────────────────────────────────────┘
+# scope: player enemy-ai combat skill stats state input ui hud
+#        camera animation audio scene save network addressables
+#        shader vfx physics build android ios docs packages
+#
+# 동작을 깨면 type 뒤에 '!' 또는 footer 에 'BREAKING CHANGE:' 사용
+
+# --- 본문(선택): 무엇을·왜 바꿨는지. 한 줄 띄우고 작성 ---
+
+
+# --- 푸터(선택): BREAKING CHANGE / 이슈 참조 등 ---
+
+# 규칙: docs/Git_Commit_Convention.md
+# Unity: .cs 와 .cs.meta, 폴더 .meta 는 반드시 함께 커밋
