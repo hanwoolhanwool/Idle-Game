@@ -18,7 +18,7 @@ MonoBehaviour:
   StartMaxHp: 100
   StartAttackPower: 10
   StartAttackSpeed: 1
-  StartMoveSpeed: 5
+  StartMoveSpeed: 10
   StartDefense: 0
   StartMaxMana: 50
   StartHpRegen: 1

@@ -28,5 +28,8 @@ public sealed class PlayerDebugCommands : MonoBehaviour
 
     [ContextMenu("Gain Test Exp")]
     private void GainTestExp() => Root.DebugGainExp(testExp);
+
+    [ContextMenu("Toggle Control Mode (Active/Idle)")]
+    private void ToggleControlMode() => Root.DebugToggleControlMode();
 }
 #endif

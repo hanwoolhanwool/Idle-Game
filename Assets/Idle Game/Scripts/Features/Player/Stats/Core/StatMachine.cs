@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public sealed class StatMachine
+public sealed class StatMachine : IReadOnlyStats
 {
     private readonly Dictionary<StatType, float> _baseValues = new();
     private readonly Dictionary<StatType, List<StatModifier>> _modifierByStat = new();
@@ -34,7 +34,6 @@ public sealed class StatMachine
         RecalculateIfDirty(statType);
         return _finalCache[statType];
     }
-    //재공부
     public StatSnapshot GetSnapshot()
     {
         if (_snapshotDirty)
@@ -64,8 +63,6 @@ public sealed class StatMachine
         _modifierByStat[modifier.StatType].Add(modifier);
         MarkDirty(modifier.StatType);
     }
-    // 재공부
-    // list.RemoveAll 부분 완벽 이해 X
     public int RemoveModifiersBySource(object source)
     {
         if (source == null) return 0;

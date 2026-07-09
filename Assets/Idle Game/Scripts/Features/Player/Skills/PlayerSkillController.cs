@@ -49,6 +49,9 @@ public sealed class PlayerSkillController : ITickable
         if (skill == null)
             return false;
 
+        if (_statComponent.IsDead)
+            return false;
+
         if (IsCasting)
             return false;
         
@@ -96,6 +99,21 @@ public sealed class PlayerSkillController : ITickable
         _castRemaining = 0f;
         
         _castGate.ExitCast();
+    }
+
+    /// <summary>
+    /// 진행 중인 시전을 취소한다(사망·경직 등 외부 중단용).
+    /// 내부 시전 상태만 정리하고 이동을 복원하며, 상태머신 전이는 호출자가 결정한다.
+    /// (예: 사망 처리기가 곧바로 Dead로 전이하므로 여기서 Idle로 되돌리지 않는다.)
+    /// </summary>
+    public void CancelCast()
+    {
+        if (_castingSkill == null)
+            return;
+
+        _movementController.SetMovementEnabled(true);
+        _castingSkill = null;
+        _castRemaining = 0f;
     }
 
     private float ComputeEffectiveCooldown(SkillDefinition skill)

@@ -25,6 +25,11 @@ public sealed class PlayerRoot : MonoBehaviour
     [SerializeField] private AutoBattleInputSource autoBattle;
     [SerializeField] private SkillButton[] skillButtons;
 
+    [Header("Input / Control Mode")]
+    [Tooltip("능동(조이스틱) 입력 소스. IMoveInputSource를 구현해야 한다.")]
+    [SerializeField] private MonoBehaviour activeInputSource;
+    [SerializeField] private PlayerControlMode initialControlMode = PlayerControlMode.Active;
+
     private PlayerStatComponent _statComponent;
     private PlayerStatOrchestrator _statOrchestrator;
 
@@ -34,6 +39,8 @@ public sealed class PlayerRoot : MonoBehaviour
     private PlayerCombatController _combatController;
     private PlayerSkillController _skillController;
     private AutoCastController _autoCast;
+    private PlayerInputRouter _inputRouter;
+    private PlayerDeathHandler _deathHandler;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -49,6 +56,11 @@ public sealed class PlayerRoot : MonoBehaviour
         float dt = Time.deltaTime;
         for (int i = 0; i < _tickables.Count; i++)
             _tickables[i].Tick(dt);
+    }
+
+    private void OnDestroy()
+    {
+        _deathHandler?.Dispose();
     }
 
     private void Compose()
@@ -72,12 +84,22 @@ public sealed class PlayerRoot : MonoBehaviour
 
     private void ComposeSkills()
     {
-        var movement = movementBehaviour as IPlayerMovementController;
-        if (stateMachineDriver == null || movement == null)
+        if (stateMachineDriver == null)
         {
-            Debug.LogError("PlayerRoot: stateMachineDriver 또는 movementBehaviour 연결이 잘못되었습니다.", this);
+            Debug.LogError("PlayerRoot: stateMachineDriver 연결이 없습니다.", this);
             return;
         }
+
+        if (!SerializedInterface.TryResolve(movementBehaviour, nameof(movementBehaviour), this, out IPlayerMovementController movement))
+            return;
+
+        // 이동 속도의 단일 출처 배선: 이동이 SO가 아닌 StatMachine을 읽도록 스탯을 주입.
+        if (movementBehaviour is IStatDrivenMovement statDrivenMovement)
+            statDrivenMovement.BindStats(_statComponent.Stats);
+        else
+            Debug.LogWarning("PlayerRoot: movementBehaviour가 IStatDrivenMovement를 구현하지 않아 스탯 기반 이동이 비활성화됩니다.", this);
+
+        ComposeInputRouter(movementBehaviour);
 
         var loadout = new SkillLoadout(basicAttack);
         if (equippedSkills != null)
@@ -87,7 +109,11 @@ public sealed class PlayerRoot : MonoBehaviour
         }
 
         var cooldownTracker = new SkillCooldownTracker();
-        var castGate = new PlayerStateMachineCastGate(stateMachineDriver.StateMachine);
+        // 시전 상태는 현재 Attack을 재사용한다(전용 Casting 상태는 후속 과제 §3-D). 의도를 명시적으로 표기.
+        var castGate = new PlayerStateMachineCastGate(
+            stateMachineDriver.StateMachine,
+            castStateID: PlayerStateID.Attack,
+            returnStateID: PlayerStateID.Idle);
 
         _skillController = new PlayerSkillController(
             loadout,
@@ -110,7 +136,47 @@ public sealed class PlayerRoot : MonoBehaviour
             for (int i = 0; i < skillButtons.Length; i++)
                 skillButtons[i]?.Bind(_skillController);
         }
+
+        // 사망/피격 파이프라인: 자원 컴포넌트의 사망 이벤트를 상태머신·스킬·이동과 연동.
+        _deathHandler = new PlayerDeathHandler(
+            _statComponent,
+            stateMachineDriver.StateMachine,
+            _skillController,
+            movement);
     }
+
+    /// <summary>
+    /// 입력 라우터를 조립해 이동 컨트롤러에 주입한다.
+    /// 능동(조이스틱)/방치(자동전투) 소스를 감싸 런타임에 스왑 가능하게 한다.
+    /// 능동 소스가 미배선이면 라우터를 주입하지 않아, 이동은 자신의 직렬화 소스를 그대로 쓴다(동작 보존).
+    /// </summary>
+    private void ComposeInputRouter(MonoBehaviour movement)
+    {
+        var activeSource = activeInputSource as IMoveInputSource;
+        if (activeSource == null)
+        {
+            if (activeInputSource != null)
+                Debug.LogWarning("PlayerRoot: activeInputSource가 IMoveInputSource를 구현하지 않습니다. 입력 라우터를 건너뜁니다.", this);
+            return;
+        }
+
+        var idleSource = autoBattle as IMoveInputSource;
+        _inputRouter = new PlayerInputRouter(activeSource, idleSource, initialControlMode);
+
+        if (movement is IMoveInputConsumer inputConsumer)
+            inputConsumer.SetInputSource(_inputRouter);
+        else
+            Debug.LogWarning("PlayerRoot: movementBehaviour가 IMoveInputConsumer를 구현하지 않아 모드 전환이 이동에 반영되지 않습니다.", this);
+    }
+
+    /// <summary>방치↔능동 제어 모드를 런타임에 전환한다.</summary>
+    public void SetControlMode(PlayerControlMode mode)
+    {
+        _inputRouter?.SetMode(mode);
+    }
+
+    /// <summary>현재 제어 모드(라우터 미구성 시 null).</summary>
+    public PlayerControlMode? ControlMode => _inputRouter?.Mode;
 
     private void Initialize()
     {
@@ -148,7 +214,7 @@ public sealed class PlayerRoot : MonoBehaviour
     // 에디터 전용 디버그 훅. PlayerDebugCommands가 호출하며, 빌드에는 포함되지 않는다.
     internal void DebugApplyDamage(float damage)
     {
-        _combatController.TakeDamage(damage);
+        _combatController.ApplyDamage(damage);
         hudBinder?.RefreshImmediate(_statComponent);
     }
 
@@ -162,6 +228,18 @@ public sealed class PlayerRoot : MonoBehaviour
     {
         _progressionController.AddExp(amount);
         hudBinder?.RefreshImmediate(_statComponent);
+    }
+
+    internal void DebugToggleControlMode()
+    {
+        if (_inputRouter == null)
+        {
+            Debug.LogWarning("PlayerRoot: 입력 라우터가 구성되지 않아 모드 전환 불가(activeInputSource 미배선).", this);
+            return;
+        }
+
+        _inputRouter.ToggleMode();
+        Debug.Log($"[PlayerRoot] 제어 모드 → {_inputRouter.Mode}", this);
     }
 #endif
 }

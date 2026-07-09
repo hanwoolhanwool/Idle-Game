@@ -18,17 +18,11 @@ public sealed class PlayerStateMachineDriver : MonoBehaviour
 
     private void Awake()
     {
-        _inputReader = joystickInputReader as IMoveInputSource;
-        _movementController = playerMovementController as IPlayerMovementController;
-        _animationController = playerAnimationController as IPlayerAnimationController;
-        
-        if(_inputReader == null)
-            Debug.LogError($"{name}: joystickInputReader must implement IMoveInputSource", this);
-        if(_animationController == null)
-            Debug.LogError($"{name}: animationController must implement IPlayerAnimationController", this);
-        if(_movementController == null)
-            Debug.LogError($"{name}: movementController must implement IPlayerMovementController", this);
-        
+        SerializedInterface.TryResolve(joystickInputReader, nameof(joystickInputReader), this, out _inputReader);
+        SerializedInterface.TryResolve(playerMovementController, nameof(playerMovementController), this, out _movementController);
+        SerializedInterface.TryResolve(playerAnimationController, nameof(playerAnimationController), this, out _animationController);
+
+
         var context = new PlayerStateContext(this.transform, _inputReader, _movementController, _animationController);
         
         _stateMachine = new PlayerStateMachine(context);

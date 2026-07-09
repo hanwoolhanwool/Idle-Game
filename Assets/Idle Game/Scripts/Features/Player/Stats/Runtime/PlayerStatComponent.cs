@@ -9,9 +9,14 @@ public sealed class PlayerStatComponent : ITickable
 
     private float _currentHp;
     private float _currentMp;
-    
+    private bool _isDead;
+
     public float CurrentHp => _currentHp;
     public float CurrentMp => _currentMp;
+    public bool IsDead => _isDead;
+
+    /// <summary>HP가 0에 도달해 사망한 순간 1회 발행된다. (상태머신 Dead 전이·시전 취소 트리거)</summary>
+    public event Action OnDied;
 
     public PlayerStatComponent()
     {
@@ -33,6 +38,7 @@ public sealed class PlayerStatComponent : ITickable
 
     public void ApplyDamage(float incomingDamage)
     {
+        if (_isDead) return;
         if (incomingDamage <= 0f) return;
         float defense = Stats.GetFinal(StatType.Defense);
         float damageReduction = Stats.GetFinal(StatType.DamageReduction);
@@ -40,6 +46,12 @@ public sealed class PlayerStatComponent : ITickable
         float reducedByDefense = incomingDamage * (100f / (100f + Math.Max(0f, defense)));
         float reducedByRate = reducedByDefense * (1f - damageReduction);
         _currentHp = Math.Max(0f, _currentHp - reducedByRate);
+
+        if (_currentHp <= 0f)
+        {
+            _isDead = true;
+            OnDied?.Invoke();
+        }
     }
 
     public void Heal(float amount)
