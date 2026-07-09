@@ -12,13 +12,35 @@
 1. **전체 아키텍처 개요** — 아래 본문. 프로젝트 전체를 한눈에.
 2. **기능별 상세 기술 명세서** — [`specs/`](./specs) 폴더. 각 시스템의 설계·구조·다이어그램.
 
-| 문서 | 대상 시스템 | 핵심 패턴 |
-|------|-------------|-----------|
-| [01. 플레이어 상태 머신](./specs/01_State_Machine.md) | Idle/Move/Attack/Hit/Dead 상태 전이 | State Pattern · 제어 주체 추상화 |
-| [02. 스탯 시스템](./specs/02_Stat_System.md) | 스탯 계산·모디파이어·자원 | 단일 진실 공급원 · dirty-flag 캐싱 |
-| [03. 스킬·전투 시스템](./specs/03_Skill_Combat_System.md) | 스킬 편성·시전·쿨다운·전투 | Strategy Pattern · Composition |
-| [Combat_Skill_Plan.md](./Combat_Skill_Plan.md) | 스킬 시스템 구현 계획서(연혁) | — |
-| [Stat_시스템_분석_및_리펙터링_안내.md](./Stat_시스템_분석_및_리펙터링_안내.md) | 스탯 시스템 진단 리포트 | — |
+**아키텍처 명세** — [`specs/`](./specs) (완성된 시스템의 구조·설계 근거)
+
+> 🚧 기존 명세(상태 머신·스탯·스킬)는 새 문서 규칙([CLAUDE.md](../CLAUDE.md))에 맞춰 **재작성 예정**입니다. 완료되는 대로 아래 표에 다시 등재됩니다.
+>
+> | 문서 | 대상 시스템 | 상태 |
+> |------|-------------|------|
+> | 01. 플레이어 상태 머신 | Idle/Move/Attack/Hit/Dead 상태 전이 | 재작성 예정 |
+> | 02. 스탯 시스템 | 스탯 계산·모디파이어·자원 | 재작성 예정 |
+> | 03. 스킬·전투 시스템 | 스킬 편성·시전·쿨다운·전투 | 재작성 예정 |
+
+**설계·계획** — [`design/`](./design) (구현 전·중의 방향)
+
+| 문서 | 내용 |
+|------|------|
+| [Combat_Skill_Plan.md](./design/Combat_Skill_Plan.md) | 스킬 시스템 구현 계획서(연혁) |
+| [PlayerRoot_Refactoring_Proposal.md](./design/PlayerRoot_Refactoring_Proposal.md) | PlayerRoot 리팩터링 제안 |
+
+**분석·기록** — [`reports/`](./reports) (진단·작업 로그)
+
+| 문서 | 내용 |
+|------|------|
+| [Stat_시스템_분석_및_리펙터링_안내.md](./reports/Stat_시스템_분석_및_리펙터링_안내.md) | 스탯 시스템 진단 리포트 |
+| [Refactoring_Worklog_2026-07-09.md](./reports/Refactoring_Worklog_2026-07-09.md) | 리팩터링 작업 로그 |
+
+**규약** — [`conventions/`](./conventions)
+
+| 문서 | 내용 |
+|------|------|
+| [Git_Commit_Convention.md](./conventions/Git_Commit_Convention.md) | Git 커밋 컨벤션 |
 
 ---
 
@@ -174,6 +196,6 @@ Assets/Idle Game/Scripts/
 
 ## 5. 문서 규약
 
-- 모든 문서는 **한국어**, GitHub 렌더링 **Mermaid** 다이어그램을 사용합니다.
-- 다이어그램은 그림 파일이 아니라 **텍스트로 정의**됩니다(Diagram as Code). 코드가 바뀌면 다이어그램도 diff로 리뷰됩니다.
-- 각 명세서는 `개요 → 요구사항 → 구성요소 → 구조도 → 동작흐름 → 설계포인트(SOLID) → 엣지케이스 → 확장여지` 순서를 공통 템플릿으로 따릅니다.
+문서 작성 규칙(문서 종류·공통 섹션 템플릿·Mermaid 규약·커밋 규칙)의 **단일 기준은 [CLAUDE.md](../CLAUDE.md)의 "기술 명세서 작성 규칙"** 입니다. 이 허브는 규칙을 중복 기술하지 않고 인덱스 역할만 합니다. (규칙 변경은 CLAUDE.md에서만 하고, 여기서는 반복하지 않습니다.)
+
+요약: 모든 문서는 **한국어** + GitHub 렌더링 **Mermaid**(Diagram as Code). 상세 템플릿·규칙은 CLAUDE.md 참조.
