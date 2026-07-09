@@ -20,6 +20,6 @@ public sealed class SkillDefinition : ScriptableObject
     [Header("Attack (Type == Attack)")] 
     public float DamageMultiplier = 1f;
 
-    [Header("Csting Behavior")] 
+    [Header("Casting Behavior")]
     public bool CanMoveWhileCasting = false;
 }
