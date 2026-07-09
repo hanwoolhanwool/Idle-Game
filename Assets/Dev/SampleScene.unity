@@ -148,7 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c70aa7f632194e699dc94380476ed6a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHudBinder
-  debugLogOrRefresh: 1
+  hudBehaviour: {fileID: 0}
+  useDebugHudFallback: 1
 --- !u!4 &90085649
 Transform:
   m_ObjectHideFlags: 0
@@ -1431,6 +1432,8 @@ MonoBehaviour:
   - {fileID: 1327567890}
   - {fileID: 1184054247}
   - {fileID: 1298434970}
+  activeInputSource: {fileID: 3831475088872721858}
+  initialControlMode: 0
 --- !u!114 &2146784843 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 401362385033348660, guid: d9fdc4db13a0fda45b139ce279604808, type: 3}
@@ -2346,6 +2349,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2146784847}
   m_SourcePrefab: {fileID: 100100000, guid: d9fdc4db13a0fda45b139ce279604808, type: 3}
+--- !u!114 &3831475088872721858 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6457379471878445473, guid: d9fdc4db13a0fda45b139ce279604808, type: 3}
+  m_PrefabInstance: {fileID: 3831475088872721857}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146784823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75f9cb07a29aeb64794232a9e533bc1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JoystickController
 --- !u!224 &4114915696312363143 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1074199535978964571, guid: 393fa7dd3bc74ce4092cfcdde7d0929e, type: 3}
