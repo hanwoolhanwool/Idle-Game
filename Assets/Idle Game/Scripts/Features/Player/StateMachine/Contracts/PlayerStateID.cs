@@ -4,6 +4,7 @@ public enum PlayerStateID
     Idle,
     Move,
     Attack,
+    Casting,
     Hit,
     Dead
 }

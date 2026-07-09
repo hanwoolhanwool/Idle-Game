@@ -31,6 +31,7 @@ public sealed class PlayerStateMachineDriver : MonoBehaviour
             new PlayerState_Idle(_stateMachine),
             new PlayerState_Move(_stateMachine),
             new PlayerState_Attack(_stateMachine),
+            new PlayerState_Casting(_stateMachine),
             new PlayerState_Hit(_stateMachine),
             new PlayerState_Dead(_stateMachine)
         };
