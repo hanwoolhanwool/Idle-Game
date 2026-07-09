@@ -20,8 +20,7 @@ public sealed class PlayerRoot : MonoBehaviour
     [Header("Skills")]
     [SerializeField] private PlayerStateMachineDriver stateMachineDriver;
     [SerializeField] private MonoBehaviour movementBehaviour;
-    [SerializeField] private SkillDefinition basicAttack;
-    [SerializeField] private SkillDefinition[] equippedSkills;
+    [SerializeField] private SkillLoadoutConfig loadoutConfig;
     [SerializeField] private AutoBattleInputSource autoBattle;
     [SerializeField] private SkillButton[] skillButtons;
 
@@ -41,6 +40,7 @@ public sealed class PlayerRoot : MonoBehaviour
     private AutoCastController _autoCast;
     private PlayerInputRouter _inputRouter;
     private PlayerDeathHandler _deathHandler;
+    private PlayerHitReaction _hitReaction;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -61,6 +61,10 @@ public sealed class PlayerRoot : MonoBehaviour
     private void OnDestroy()
     {
         _deathHandler?.Dispose();
+        _hitReaction?.Dispose();
+
+        if (_combatController != null)
+            PlayerRegistry.Unregister(_combatController);
     }
 
     private void Compose()
@@ -101,18 +105,25 @@ public sealed class PlayerRoot : MonoBehaviour
 
         ComposeInputRouter(movementBehaviour);
 
-        var loadout = new SkillLoadout(basicAttack);
-        if (equippedSkills != null)
+        if (loadoutConfig == null)
         {
-            for (int i = 0; i < equippedSkills.Length; i++)
-                loadout.TryEquip(i + 1, equippedSkills[i]);
+            Debug.LogError("PlayerRoot: loadoutConfig가 연결되지 않았습니다.", this);
+            return;
+        }
+
+        var loadout = new SkillLoadout(loadoutConfig.BasicAttack);
+        SkillDefinition[] equipped = loadoutConfig.EquippedSkills;
+        if (equipped != null)
+        {
+            for (int i = 0; i < equipped.Length; i++)
+                loadout.TryEquip(i + 1, equipped[i]);
         }
 
         var cooldownTracker = new SkillCooldownTracker();
-        // 시전 상태는 현재 Attack을 재사용한다(전용 Casting 상태는 후속 과제 §3-D). 의도를 명시적으로 표기.
+        // 시전 전용 Casting 상태로 진입/복귀. 평타(Attack)와 스킬 시전을 구분한다(§3-D).
         var castGate = new PlayerStateMachineCastGate(
             stateMachineDriver.StateMachine,
-            castStateID: PlayerStateID.Attack,
+            castStateID: PlayerStateID.Casting,
             returnStateID: PlayerStateID.Idle);
 
         _skillController = new PlayerSkillController(
@@ -143,6 +154,9 @@ public sealed class PlayerRoot : MonoBehaviour
             stateMachineDriver.StateMachine,
             _skillController,
             movement);
+
+        // 피격(생존) 시 Hit(경직) 전이.
+        _hitReaction = new PlayerHitReaction(_statComponent, stateMachineDriver.StateMachine);
     }
 
     /// <summary>
@@ -197,6 +211,9 @@ public sealed class PlayerRoot : MonoBehaviour
         // 최종 MaxHp/MaxMp 기준으로 현재 자원을 가득 채운다.
         _statComponent.RefillResourcesToMax();
         hudBinder?.Bind(_statComponent);
+
+        // 적이 플레이어를 피격 대상으로 찾을 수 있도록 등록(피격 소스 일원화).
+        PlayerRegistry.Register(_combatController, transform, () => !_statComponent.IsDead);
     }
 
     private void RegisterTickables()

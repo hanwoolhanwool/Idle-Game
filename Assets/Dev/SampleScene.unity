@@ -1095,6 +1095,7 @@ GameObject:
   - component: {fileID: 1792814348}
   - component: {fileID: 1792814347}
   - component: {fileID: 1792814346}
+  - component: {fileID: 1792814349}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -1189,6 +1190,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1792814349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792814345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c24f39f6bd4222e439c3d3d80b1fa86c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttacker
+  attackRange: 1.5
+  damage: 10
+  attackInterval: 1
 --- !u!1 &1802057853
 GameObject:
   m_ObjectHideFlags: 0
@@ -1417,13 +1433,7 @@ MonoBehaviour:
   hudBinder: {fileID: 90085648}
   stateMachineDriver: {fileID: 2146784839}
   movementBehaviour: {fileID: 2146784843}
-  basicAttack: {fileID: 11400000, guid: bb770e94caa5b7a419271c6a81be52e8, type: 2}
-  equippedSkills:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  loadoutConfig: {fileID: 11400000, guid: f54a07e38091f2940b6f5dfe5ca2c3db, type: 2}
   autoBattle: {fileID: 2146784847}
   skillButtons:
   - {fileID: 1651419434}
