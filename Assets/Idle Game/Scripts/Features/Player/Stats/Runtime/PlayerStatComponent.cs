@@ -18,6 +18,9 @@ public sealed class PlayerStatComponent : ITickable
     /// <summary>HP가 0에 도달해 사망한 순간 1회 발행된다. (상태머신 Dead 전이·시전 취소 트리거)</summary>
     public event Action OnDied;
 
+    /// <summary>피격했지만 생존한 경우 실제 적용 데미지와 함께 발행된다. (Hit 경직 트리거)</summary>
+    public event Action<float> OnDamaged;
+
     public PlayerStatComponent()
     {
         _currentHp = Stats.GetFinal(StatType.MaxHp);
@@ -51,6 +54,10 @@ public sealed class PlayerStatComponent : ITickable
         {
             _isDead = true;
             OnDied?.Invoke();
+        }
+        else
+        {
+            OnDamaged?.Invoke(reducedByRate);
         }
     }
 
