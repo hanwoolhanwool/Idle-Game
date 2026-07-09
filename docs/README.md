@@ -1,0 +1,179 @@
+# Idle Game — 기술 문서 허브
+
+> Unity 기반 **방치형(Idle) + 능동 전투 하이브리드** 게임의 아키텍처 및 기능별 기술 명세서.
+> 설계 원칙: OOP · SOLID · 확장 가능성 · 테스트 가능성 ([CLAUDE.md](../CLAUDE.md) 준수)
+
+---
+
+## 0. 이 문서는 무엇인가
+
+이 저장소의 설계 의도와 시스템 구조를 기록한 문서 모음입니다. 두 층위로 구성됩니다.
+
+1. **전체 아키텍처 개요** — 아래 본문. 프로젝트 전체를 한눈에.
+2. **기능별 상세 기술 명세서** — [`specs/`](./specs) 폴더. 각 시스템의 설계·구조·다이어그램.
+
+| 문서 | 대상 시스템 | 핵심 패턴 |
+|------|-------------|-----------|
+| [01. 플레이어 상태 머신](./specs/01_State_Machine.md) | Idle/Move/Attack/Hit/Dead 상태 전이 | State Pattern · 제어 주체 추상화 |
+| [02. 스탯 시스템](./specs/02_Stat_System.md) | 스탯 계산·모디파이어·자원 | 단일 진실 공급원 · dirty-flag 캐싱 |
+| [03. 스킬·전투 시스템](./specs/03_Skill_Combat_System.md) | 스킬 편성·시전·쿨다운·전투 | Strategy Pattern · Composition |
+| [Combat_Skill_Plan.md](./Combat_Skill_Plan.md) | 스킬 시스템 구현 계획서(연혁) | — |
+| [Stat_시스템_분석_및_리펙터링_안내.md](./Stat_시스템_분석_및_리펙터링_안내.md) | 스탯 시스템 진단 리포트 | — |
+
+---
+
+## 1. 게임 개요
+
+**순수 방치형 + 능동 전투**의 하이브리드 구조입니다.
+
+- **방치 모드**: AI가 적을 탐색·접근·자동 공격하며 성장. (`AutoBattleInputSource` + `AutoCastController`)
+- **능동 모드**: 보스/레이드/PvP에서 플레이어가 조이스틱 이동 + 스킬 버튼으로 직접 조작. (`JoystickInputReader` + `SkillButton`)
+
+두 모드를 별도 코드로 만들지 않았습니다. **"제어 주체(플레이어/AI)"를 인터페이스로 추상화**해, 입력 소스만 교체하면 동일한 상태 머신·전투 파이프라인이 두 모드를 모두 처리합니다. 이것이 이 프로젝트의 핵심 설계 판단입니다.
+
+---
+
+## 2. 아키텍처 원칙
+
+이 프로젝트는 세 가지 규칙을 관통해서 지킵니다.
+
+### 2.1 Composition Root — 조립은 한 곳에서만
+
+객체 생성과 의존성 연결은 오직 [`PlayerRoot`](../Assets/Idle%20Game/Scripts/Features/Player/Composition/PlayerRoot.cs) 한 곳에서 일어납니다. 나머지 클래스는 **필요한 의존성을 생성자로 주입받기만** 합니다.
+
+```
+PlayerRoot.Compose()   →  객체 생성 + 의존성 주입
+PlayerRoot.Initialize()→  초기 데이터 적용(스탯/장비/버프)
+PlayerRoot.Update()    →  ITickable 목록만 순회
+```
+
+`PlayerRoot`는 "얇은 글루(glue)"입니다. 비즈니스 로직을 갖지 않고, 누가 누구에게 의존하는지만 결정합니다.
+
+### 2.2 DIP — 구체가 아니라 추상에 의존
+
+MonoBehaviour(Unity 종속)와 순수 C# 로직을 분리합니다. 로직 클래스는 인터페이스에만 의존하므로 **EditMode 단위 테스트에서 목(mock)으로 교체**할 수 있습니다.
+
+| 추상 | 역할 | 구현 교체 예 |
+|------|------|--------------|
+| `IMoveInputSource` | 이동 입력 공급 | 조이스틱 / AI 자동전투 |
+| `ITargetProvider` | 공격 대상 선택 | 최근접 적 / (향후) 최저 HP 적 |
+| `ICastGate` | 시전 중 잠금 판정 | 상태 머신 기반 |
+| `ISkillEffect` | 스킬 효과 실행 | 공격 / 버프 / (향후) 소환·디버프 |
+| `ITickable` | 프레임 갱신 대상 | 스탯·버프·스킬·자동시전 |
+
+### 2.3 ITickable — Update 순회의 개방·폐쇄
+
+프레임 갱신이 필요한 시스템은 모두 `ITickable`을 구현하고, `PlayerRoot`가 리스트로 순회합니다. **새 틱 시스템을 추가해도 `Update()`를 수정하지 않습니다(OCP).**
+
+---
+
+## 3. 시스템 맵
+
+`PlayerRoot`가 조립하는 전체 객체 그래프입니다. 화살표는 의존(참조) 방향입니다.
+
+```mermaid
+flowchart TB
+    subgraph Composition["조립 루트"]
+        Root[PlayerRoot<br/>MonoBehaviour]
+    end
+
+    subgraph Input["입력 (제어 주체 추상화)"]
+        IMove[/IMoveInputSource/]
+        Joy[JoystickInputReader]
+        Auto[AutoBattleInputSource]
+        Joy -.implements.-> IMove
+        Auto -.implements.-> IMove
+    end
+
+    subgraph SM["상태 머신"]
+        Driver[PlayerStateMachineDriver]
+        Machine[PlayerStateMachine]
+        States[Idle / Move / Attack<br/>Hit / Dead]
+        Driver --> Machine --> States
+    end
+
+    subgraph Stat["스탯 시스템"]
+        StatComp[PlayerStatComponent]
+        StatMachine[StatMachine<br/>단일 진실 공급원]
+        Orch[PlayerStatOrchestrator]
+        StatComp --> StatMachine
+        Orch --> StatComp
+    end
+
+    subgraph Skill["스킬·전투 시스템"]
+        SkillCtrl[PlayerSkillController]
+        Loadout[SkillLoadout · 6슬롯]
+        CD[SkillCooldownTracker]
+        Effects[ISkillEffect<br/>Attack / Buff]
+        Gate[ICastGate]
+        SkillCtrl --> Loadout & CD & Effects & Gate
+    end
+
+    subgraph Domain["도메인 컨트롤러"]
+        Prog[ProgressionController]
+        Equip[EquipmentController]
+        Buff[BuffController]
+        Combat[CombatController]
+    end
+
+    subgraph Enemy["적 · 자동 전투"]
+        Registry[EnemyRegistry]
+        AutoCast[AutoCastController]
+        Target[/ITargetProvider/]
+    end
+
+    Root --> Driver
+    Root --> SkillCtrl
+    Root --> StatComp
+    Root --> Prog & Equip & Buff & Combat
+    Root --> AutoCast
+
+    Prog & Equip & Buff --> Orch
+    Combat --> StatComp
+    SkillCtrl --> Combat & StatComp & Buff
+    Gate -.reads.-> Machine
+    Auto --> Target --> Registry
+    AutoCast --> Auto
+```
+
+세 개의 핵심 시스템(상태 머신 · 스탯 · 스킬)은 각자 독립적인 책임을 가지며, `PlayerRoot`에서만 서로 연결됩니다.
+
+---
+
+## 4. 폴더 구조
+
+```
+Assets/Idle Game/Scripts/
+├── Core/Game/              게임 매니저
+├── Data/
+│   ├── Definitions/        ScriptableObject 데이터 (Skill/Buff/Equipment/Stat 정의)
+│   └── Input/              입력 리더
+├── Shared/                 프로젝트 공통 값 객체·열거형
+│   ├── Enums/              StatType, ModifierOp, ModifierLayer, SkillType
+│   ├── ValueObjects/       StatModifier, StatDefinition
+│   └── Serialization/      직렬화용 구조체
+└── Features/
+    ├── Player/
+    │   ├── Composition/    PlayerRoot (조립 루트)
+    │   ├── StateMachine/   상태 머신 ── 명세서 01
+    │   ├── Stats/          스탯 시스템 ── 명세서 02
+    │   ├── Skills/         스킬 시스템 ── 명세서 03
+    │   ├── Combat/         전투 진입점
+    │   ├── Buffs/          버프 컨트롤러
+    │   ├── Equipment/      장비 컨트롤러
+    │   ├── Progression/    레벨/경험치
+    │   ├── Input/          입력 소스 구현
+    │   ├── Movement/       이동 컨트롤러
+    │   └── Presentation/   HUD, 스킬 버튼
+    └── Enemy/              적 유닛·레지스트리·타겟 제공자
+```
+
+폴더 = 기능(Feature) 단위로 나뉘며, 각 기능은 `Contracts`(인터페이스) / `Core`(핵심 로직) / `Effects`·`States`·`Adapters`(구현) 하위 구조를 따릅니다.
+
+---
+
+## 5. 문서 규약
+
+- 모든 문서는 **한국어**, GitHub 렌더링 **Mermaid** 다이어그램을 사용합니다.
+- 다이어그램은 그림 파일이 아니라 **텍스트로 정의**됩니다(Diagram as Code). 코드가 바뀌면 다이어그램도 diff로 리뷰됩니다.
+- 각 명세서는 `개요 → 요구사항 → 구성요소 → 구조도 → 동작흐름 → 설계포인트(SOLID) → 엣지케이스 → 확장여지` 순서를 공통 템플릿으로 따릅니다.
