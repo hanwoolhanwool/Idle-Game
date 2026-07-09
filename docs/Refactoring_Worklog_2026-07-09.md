@@ -1,9 +1,9 @@
 # PlayerRoot 하위 시스템 리팩터링 — 작업 로그
 
-> 작업일: 2026-07-09
-> 근거 문서: [`PlayerRoot_Refactoring_Proposal.md`](./PlayerRoot_Refactoring_Proposal.md)
-> 범위: 제안서 로드맵 1~6단계 구현 + 입력 라우터 씬 배선
-> 브랜치: `main` (원격 `origin/main` 푸시 완료, 단 씬 배선 커밋은 별도 확인 대기)
+> 작업일: 2026-07-09 (1차) · 2026-07-10 (후속: D 심화·F 마저·G·씬)
+> 근거 문서: [`PlayerRoot_Refactoring_Proposal.md`](./PlayerRoot_Refactoring_Proposal.md), 계획서 12장(§G)
+> 범위: 제안서 로드맵 전 항목(A~K) 구현 + 입력 라우터/편성/적 공격 씬 배선
+> 브랜치: `main` (원격 `origin/main` 푸시 완료)
 
 ---
 
@@ -11,10 +11,13 @@
 
 제안서에서 정리한 `PlayerRoot` 하위 시스템의 구조·정합성 문제(A~K)를 구현으로 해소했다.
 핵심 축은 **"두 시스템이 같은 개념을 중복 소유"하던 것을 단일 출처로 모으고, 아직 배선되지 않았던
-핵심 기능(모드 전환·사망)을 실제로 연결"**하는 것이다.
+핵심 기능(모드 전환·사망·편성)을 실제로 연결"**하는 것이다.
+
+1차(07-09)에 A·B·C·E·K·F(사망)·D(명료화)·J를 처리하고, 후속(07-10)에 D 심화(Casting 상태),
+F 마저(Hit·적 공격), G(편성 SO)를 완료했다. 상세는 §8.
 
 - 컴파일: Unity(Idle Game) 에러 0
-- 런타임(플레이 모드) 체감 검증: **미실시** (권장 항목은 §6 참고)
+- 런타임: 플레이 스모크 테스트(시작 예외 0, HUD 초기화 정상, 로그 비스팸) 통과. 깊은 체감 검증은 수동 권장(§6).
 
 ---
 
@@ -22,13 +25,27 @@
 
 | 커밋 | 타입/스코프 | 내용 | 규모 |
 |---|---|---|---|
-| `dc3c42e` | refactor(player) | A 스탯 SoT · C 입력 라우터 · F 사망 파이프라인 · B 배선 헬퍼 · D 시전 상태 | 27파일, +363/−52 |
-| `5ea8df7` | refactor(player-hud) | E HUD 추상화 · K 갱신 합치기 | 7파일, +118/−17 |
-| `2be0845` | chore(hygiene) | J 파일명·헤더 오타 | 3파일 |
-| `b2db818` | docs(player) | 리팩터링 제안서 문서 | 1파일, +223 |
-| *(미커밋)* | chore(scene) | C 활성화 씬 배선(`activeInputSource`) + HUD 필드 재직렬화 | `SampleScene.unity` |
+**1차 (2026-07-09)**
 
-> `PlayerRoot`가 A·C·F·B·D 다섯 관심사에 걸쳐 있어 파일 단위로는 그보다 잘게 못 나눠, 첫 커밋에 함께 담고 본문에 항목별로 구분 기재했다.
+| 커밋 | 타입/스코프 | 내용 |
+|---|---|---|
+| `dc3c42e` | refactor(player) | A 스탯 SoT · C 입력 라우터 · F 사망 파이프라인 · B 배선 헬퍼 · D 시전 상태 |
+| `5ea8df7` | refactor(player-hud) | E HUD 추상화 · K 갱신 합치기 |
+| `2be0845` | chore(hygiene) | J 파일명·헤더 오타 |
+| `b2db818` | docs(player) | 리팩터링 제안서 문서 |
+| `fec72c6` | chore(scene) | C 활성화 씬 배선(`activeInputSource`) + HUD 필드 재직렬화 |
+| `1663e1c` | docs | 작업 로그 문서 |
+
+**후속 (2026-07-10)**
+
+| 커밋 | 타입/스코프 | 내용 |
+|---|---|---|
+| `bb9b03e` | feat(state) | D 심화 — 전용 `Casting` 시전 상태 분리 |
+| `9b31eb5` | feat(combat) | F 마저 — 피격/사망 루프 + 적 공격(`PlayerRegistry`·`EnemyAttacker`·`Hit`) |
+| `887264b` | refactor(skill) | G — `SkillLoadoutConfig` 편성 데이터 분리(+에셋) |
+| `389a890` | feat(player) | D·F·G의 `PlayerRoot` 조립 + `SampleScene` 배선 |
+
+> `PlayerRoot`가 여러 관심사에 걸쳐 있어 파일 단위로는 그보다 잘게 못 나눠, 통합 커밋에 함께 담고 본문에 항목별로 구분 기재했다.
 
 ---
 
@@ -59,7 +76,7 @@
   - `PlayerSkillController.CancelCast()` 추가, `TryUseSkill`에 `IsDead` 가드.
   - `PlayerState_Dead` 구현(진입 시 이동 정지 방어).
   - `PlayerCombatController : IDamageable`로 통일(`TakeDamage` → `ApplyDamage`).
-- **미완:** `Hit`(경직) 상태와 적→플레이어 실제 공격 연결은 후속(§6).
+- **후속 완료(§8-F):** `Hit`(경직) 상태 + 적→플레이어 공격 루프 연결.
 
 ### B. 배선 헬퍼 (DRY)
 - **문제:** `[SerializeField] MonoBehaviour` + `as IInterface` + null 로그 패턴이 3곳 복붙.
@@ -74,7 +91,8 @@
 - **변경:** `PlayerHudBinder`가 변경을 dirty flag로 모아 **프레임당 1회**만 렌더.
 
 ### D. 시전 상태 의미 명료화
-- **변경:** `PlayerStateMachineCastGate` 파라미터명(`castStateID`)·의도 주석 명시. `PlayerRoot`가 매핑을 명시적으로 주입(`Attack` 재사용). 전용 `Casting` 상태 분리는 후속.
+- **변경:** `PlayerStateMachineCastGate` 파라미터명(`castStateID`)·의도 주석 명시. `PlayerRoot`가 매핑을 명시적으로 주입.
+- **후속 완료(§8-D):** 전용 `Casting` 상태 분리(`Attack` 재사용 제거).
 
 ### J. 네이밍·위생
 - `NearesEnemyTargetProvider.cs` → `NearestEnemyTargetProvider.cs` (파일명 정정, 클래스명과 일치).
@@ -139,18 +157,23 @@
 
 ## 6. 남은 작업 (후속)
 
-| 항목 | 내용 |
-|---|---|
-| **F 마저** | `Hit`(경직) 상태 구현 + 적→플레이어 공격 연결(플레이어를 실제로 때리는 소스) |
-| **G** | `SkillLoadoutConfig` SO로 스킬 편성 하드코딩 제거(별도 챕터) |
-| **D 심화** | 전용 `Casting` 상태 분리 |
-| **위생(프리팹)** | 프리팹 `PlayerMovementController` 필드 리네임 드리프트(`inputReader`→`inputSourceBehaviour`)로 끊긴 조이스틱 링크 정리 |
-| **커밋** | 씬 배선(`SampleScene.unity`) 커밋 |
+| 항목 | 상태 | 내용 |
+|---|---|---|
+| **F 마저** | ✅ 완료(§8-F) | `Hit`(경직) 상태 + 적→플레이어 공격 연결 |
+| **G** | ✅ 완료(§8-G) | `SkillLoadoutConfig` SO 편성 분리 |
+| **D 심화** | ✅ 완료(§8-D) | 전용 `Casting` 상태 분리 |
+| **위생(프리팹)** | ⏸️ 보류 | 프리팹 `PlayerMovementController.inputSourceBehaviour` 드리프트 — 씬 오버라이드+런타임 라우터가 대체하므로 기능 무해. 위험 대비 이득 없어 보류 |
+| **I / H** | ⏸️ 보류 | 과설계 방지("인지만") / 전역 `EnemyRegistry`("기록만") |
 
-### 런타임 검증 권장 시나리오
+### 튜닝·확장 여지
+- `EnemyAttacker`(damage/interval/range), `Hit` 경직 시간(0.15s), `initialControlMode`(현재 Active).
+- `EnemyAttacker`를 적 프리팹/스포너로 확산(현재 씬의 적 1개에만 부착).
+
+### 런타임 검증 권장 시나리오 (수동)
 1. 스탯 기반 이동속도 — 이동 버프 적용 시 실제 속도 변화(`Apply First Start Buff`).
 2. 모드 전환 — `Toggle Control Mode (Active/Idle)`로 조이스틱↔자동전투 스왑.
-3. 사망 — `Apply Test Damage` 반복 → HP 0 → `Dead` 전이·시전/이동 정지.
+3. 피격/사망 — 적 접근 시 `Hit` 경직, `Apply Test Damage` 반복 → HP 0 → `Dead` 전이·시전/이동 정지.
+4. 편성 — 각 스킬 슬롯 발동(편성 SO 반영 확인).
 
 ---
 
@@ -158,3 +181,39 @@
 
 - MCP 인스턴스 라우팅이 다중 연결 시 다른 프로젝트(Mecha Survivor)를 가리키는 문제가 있어, 씬/프리팹 쓰기는 다른 인스턴스를 닫고 Idle Game 단독 연결을 확인한 뒤 수행.
 - 다른 분기의 프로젝트 사고 이후 작업트리 무결성 점검 완료(변경 파일 목록·내용 마커·잔재 파일·브랜치/HEAD/stash 모두 정상).
+
+---
+
+## 8. 후속 작업 (2026-07-10) — D 심화 · F 마저 · G
+
+1차 로드맵 이후 남았던 3개 항목을 완료했다. MCP는 Mecha Survivor 인스턴스를 닫아 Idle Game 단독 연결을 확인한 뒤 사용.
+
+### 8-D. 전용 `Casting` 상태 분리
+- `PlayerStateID.Casting` 추가, `PlayerState_Casting` 신설·상태머신 등록.
+- `PlayerStateMachineCastGate` 기본 시전 상태를 `Attack` → `Casting`으로 전환, `PlayerRoot`가 명시 주입.
+- 결과: "평타(Attack)"와 "스킬 시전(Casting)"이 상태로 구분되어, 시전 중 애니메이션·피격 처리를 평타와 분리 가능.
+
+### 8-F. Hit 상태 + 적→플레이어 공격 연결
+- `PlayerStatComponent.OnDamaged`(생존 피격) 이벤트 추가.
+- `PlayerRegistry`(신규, static): 플레이어를 `IDamageable`+위치로 노출. 적을 찾는 `EnemyRegistry`와 대칭. `PlayerRoot`가 등록/해제.
+- `EnemyAttacker`(신규, 적 부착): 사거리 안 플레이어에 주기적 데미지(damage/interval/range 튜닝).
+- `PlayerState_Hit` 구현: 경직 타이머(0.15s) → 이동 정지 후 `Idle` 복귀.
+- `PlayerHitReaction`(신규): `OnDamaged` → Idle/Move에서만 `Hit` 전이(시전·사망 미중단, 재전이는 상태머신이 무시).
+- 씬: 적(1)에 `EnemyAttacker` 부착 → 실제 공격 루프 작동.
+
+### 8-G. `SkillLoadoutConfig` 편성 데이터 분리 (계획서 12장)
+- `SkillLoadoutConfig`(신규 SO): 슬롯0 `BasicAttack` + 슬롯1~5 `EquippedSkills`.
+- `PlayerRoot`가 `basicAttack`/`equippedSkills` 두 필드 대신 `loadoutConfig` **하나만** 참조.
+- 에셋 `Data/Player/DefaultSkillLoadout.asset` 생성(BasicAttack 연결) → 씬 `PlayerRoot.loadoutConfig`에 배선.
+- 이점: 편성=데이터/조립=`PlayerRoot` 분리(SRP), 프리셋·세이브·런타임 편성 UI 토대(OCP).
+
+### 8-후속 파일 변경
+| 구분 | 파일 |
+|---|---|
+| 신규 | `StateMachine/States/PlayerState_Casting.cs` |
+| 신규 | `Combat/PlayerRegistry.cs`, `Combat/PlayerHitReaction.cs`, `Enemy/EnemyAttacker.cs` |
+| 신규 | `Data/Definitions/SkillLoadoutConfig.cs`, `Data/Player/DefaultSkillLoadout.asset` |
+| 수정 | `Composition/PlayerRoot.cs` (D·F·G 조립) |
+| 수정 | `Contracts/PlayerStateID.cs`, `Core/PlayerStateMachineDriver.cs`, `Skills/Adapters/PlayerStateMachineCastGate.cs` |
+| 수정 | `Stats/Runtime/PlayerStatComponent.cs`, `StateMachine/States/PlayerState_Hit.cs` |
+| 수정 | `Dev/SampleScene.unity` (loadoutConfig·EnemyAttacker 배선) |
