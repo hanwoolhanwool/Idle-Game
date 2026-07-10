@@ -24,9 +24,6 @@
 |------|------|
 | [Combat_Skill_Plan.md](./design/Combat_Skill_Plan.md) | 스킬 시스템 구현 계획서(연혁) |
 | [PlayerRoot_Refactoring_Proposal.md](./design/PlayerRoot_Refactoring_Proposal.md) | PlayerRoot 리팩터링 제안 |
-| [cast-gate-default-argument-mismatch.md](./design/cast-gate-default-argument-mismatch.md) | CastGate 기본 인자 불일치·`Attack` 상태 정리 |
-| [unused-duplicate-models-cleanup.md](./design/unused-duplicate-models-cleanup.md) | 미사용·중복 모델 정리와 변환 로직 단일화 |
-| [base-stat-resolver-level-scaling.md](./design/base-stat-resolver-level-scaling.md) | 베이스 스탯 리졸버 레벨 스케일링 구현 |
 
 **분석·기록** — [`reports/`](./reports) (진단·작업 로그)
 
@@ -34,6 +31,9 @@
 |------|------|
 | [Stat_시스템_분석_및_리펙터링_안내.md](./reports/Stat_시스템_분석_및_리펙터링_안내.md) | 스탯 시스템 진단 리포트 |
 | [Refactoring_Worklog_2026-07-09.md](./reports/Refactoring_Worklog_2026-07-09.md) | 리팩터링 작업 로그 |
+| [cast-gate-default-argument-mismatch.md](./reports/cast-gate-default-argument-mismatch.md) | CastGate 기본 인자 불일치·`Attack` 상태 정리 |
+| [unused-duplicate-models-cleanup.md](./reports/unused-duplicate-models-cleanup.md) | 미사용·중복 모델 정리와 변환 로직 단일화 |
+| [base-stat-resolver-level-scaling.md](./reports/base-stat-resolver-level-scaling.md) | 베이스 스탯 리졸버 레벨 스케일링 구현 |
 
 **규약** — [`conventions/`](./conventions)
 
