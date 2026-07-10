@@ -23,5 +23,5 @@
 
 # --- 푸터(선택): BREAKING CHANGE / 이슈 참조 등 ---
 
-# 규칙: docs/Git_Commit_Convention.md
+# 규칙: docs/conventions/git-commit-convention.md
 # Unity: .cs 와 .cs.meta, 폴더 .meta 는 반드시 함께 커밋

@@ -31,6 +31,6 @@
 세부 규칙은 자주 로드할 필요가 없어 CLAUDE.md에서 분리했다. 해당 작업을 할 때만 아래를 참조한다.
 
 - **기술 명세서 작성** — [`docs/conventions/spec-writing.md`](docs/conventions/spec-writing.md): 문서 종류·저장 위치·공통 섹션 템플릿·Mermaid 규약.
-- **Git 커밋** — [`docs/conventions/Git_Commit_Convention.md`](docs/conventions/Git_Commit_Convention.md): 형식·type·scope·Unity 전용 규칙.
+- **Git 커밋** — [`docs/conventions/git-commit-convention.md`](docs/conventions/git-commit-convention.md): 형식·type·scope·Unity 전용 규칙.
 
 핵심 원칙만 요약: 코드가 바뀌면 **같은 PR에서** 관련 문서를 갱신한다. 문서 커밋은 코드와 섞지 말고 `docs` 타입으로 분리한다.

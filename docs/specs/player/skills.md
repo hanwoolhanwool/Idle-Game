@@ -2,7 +2,7 @@
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
 > **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
-> **관련 계획서**: [Combat_Skill_Plan.md](../../design/Combat_Skill_Plan.md)
+> **관련 계획서**: [combat-skill-plan.md](../../design/combat-skill-plan.md)
 
 ---
 

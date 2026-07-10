@@ -60,5 +60,5 @@
 
 ## 6. 커밋
 
-- 문서만 따로 스테이징한다(코드 변경과 섞지 않는다). 타입 `docs`, 제목·본문은 한국어. (컨벤션: [Git_Commit_Convention.md](./Git_Commit_Convention.md))
+- 문서만 따로 스테이징한다(코드 변경과 섞지 않는다). 타입 `docs`, 제목·본문은 한국어. (컨벤션: [git-commit-convention.md](./git-commit-convention.md))
 - 코드와 문서가 어긋나면 **같은 PR에서** 갱신한다.

@@ -1,7 +1,7 @@
 # PlayerRoot 하위 시스템 리팩터링 — 작업 로그
 
 > 작업일: 2026-07-09 (1차) · 2026-07-10 (후속: D 심화·F 마저·G·씬)
-> 근거 문서: [`PlayerRoot_Refactoring_Proposal.md`](../design/PlayerRoot_Refactoring_Proposal.md), 계획서 12장(§G)
+> 근거 문서: [`player-root-refactoring-proposal.md`](../design/player-root-refactoring-proposal.md), 계획서 12장(§G)
 > 범위: 제안서 로드맵 전 항목(A~K) 구현 + 입력 라우터/편성/적 공격 씬 배선
 > 브랜치: `main` (원격 `origin/main` 푸시 완료)
 

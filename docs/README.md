@@ -22,15 +22,15 @@
 
 | 문서 | 내용 |
 |------|------|
-| [Combat_Skill_Plan.md](./design/Combat_Skill_Plan.md) | 스킬 시스템 구현 계획서(연혁) |
-| [PlayerRoot_Refactoring_Proposal.md](./design/PlayerRoot_Refactoring_Proposal.md) | PlayerRoot 리팩터링 제안 |
+| [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
+| [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
 
 **분석·기록** — [`reports/`](./reports) (진단·작업 로그)
 
 | 문서 | 내용 |
 |------|------|
-| [Stat_시스템_분석_및_리펙터링_안내.md](./reports/Stat_시스템_분석_및_리펙터링_안내.md) | 스탯 시스템 진단 리포트 |
-| [Refactoring_Worklog_2026-07-09.md](./reports/Refactoring_Worklog_2026-07-09.md) | 리팩터링 작업 로그 |
+| [stat-system-refactoring-guide.md](./reports/stat-system-refactoring-guide.md) | 스탯 시스템 진단 리포트 |
+| [refactoring-worklog-2026-07-09.md](./reports/refactoring-worklog-2026-07-09.md) | 리팩터링 작업 로그 |
 | [cast-gate-default-argument-mismatch.md](./reports/cast-gate-default-argument-mismatch.md) | CastGate 기본 인자 불일치·`Attack` 상태 정리 |
 | [unused-duplicate-models-cleanup.md](./reports/unused-duplicate-models-cleanup.md) | 미사용·중복 모델 정리와 변환 로직 단일화 |
 | [base-stat-resolver-level-scaling.md](./reports/base-stat-resolver-level-scaling.md) | 베이스 스탯 리졸버 레벨 스케일링 구현 |
@@ -40,7 +40,7 @@
 | 문서 | 내용 |
 |------|------|
 | [spec-writing.md](./conventions/spec-writing.md) | 기술 명세서 작성 규칙(문서 종류·섹션 템플릿·Mermaid 규약) |
-| [Git_Commit_Convention.md](./conventions/Git_Commit_Convention.md) | Git 커밋 컨벤션 |
+| [git-commit-convention.md](./conventions/git-commit-convention.md) | Git 커밋 컨벤션 |
 
 ---
 
