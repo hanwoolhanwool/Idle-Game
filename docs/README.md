@@ -12,15 +12,11 @@
 1. **전체 아키텍처 개요** — 아래 본문. 프로젝트 전체를 한눈에.
 2. **기능별 상세 기술 명세서** — [`specs/`](./specs) 폴더. 각 시스템의 설계·구조·다이어그램.
 
-**아키텍처 명세** — [`specs/`](./specs) (완성된 시스템의 구조·설계 근거)
+**아키텍처 명세** — [`specs/`](./specs) (완성된 시스템의 구조·설계 근거). 코드 `Features/<도메인>`를 미러링하는 **도메인 폴더**로 구성한다.
 
-> 🚧 기존 명세(상태 머신·스탯·스킬)는 새 문서 규칙([CLAUDE.md](../CLAUDE.md))에 맞춰 **재작성 예정**입니다. 완료되는 대로 아래 표에 다시 등재됩니다.
->
-> | 문서 | 대상 시스템 | 상태 |
-> |------|-------------|------|
-> | 01. 플레이어 상태 머신 | Idle/Move/Attack/Hit/Dead 상태 전이 | 재작성 예정 |
-> | 02. 스탯 시스템 | 스탯 계산·모디파이어·자원 | 재작성 예정 |
-> | 03. 스킬·전투 시스템 | 스킬 편성·시전·쿨다운·전투 | 재작성 예정 |
+| 도메인 | 인덱스 | 내용 |
+|--------|--------|------|
+| **Player** | [`specs/player/`](./specs/player) | 상태 머신·스탯·스킬·전투·입력·이동·성장·장비·버프·표현 + `PlayerRoot` 조립 명세 (10개 시스템). 심사자용 추천 순서는 [player/README.md](./specs/player/README.md) §0 참조 |
 
 **설계·계획** — [`design/`](./design) (구현 전·중의 방향)
 
@@ -175,18 +171,18 @@ Assets/Idle Game/Scripts/
 │   ├── ValueObjects/       StatModifier, StatDefinition
 │   └── Serialization/      직렬화용 구조체
 └── Features/
-    ├── Player/
-    │   ├── Composition/    PlayerRoot (조립 루트)
-    │   ├── StateMachine/   상태 머신 ── 명세서 01
-    │   ├── Stats/          스탯 시스템 ── 명세서 02
-    │   ├── Skills/         스킬 시스템 ── 명세서 03
-    │   ├── Combat/         전투 진입점
-    │   ├── Buffs/          버프 컨트롤러
-    │   ├── Equipment/      장비 컨트롤러
-    │   ├── Progression/    레벨/경험치
-    │   ├── Input/          입력 소스 구현
-    │   ├── Movement/       이동 컨트롤러
-    │   └── Presentation/   HUD, 스킬 버튼
+    ├── Player/             ── 명세: specs/player/
+    │   ├── Composition/    PlayerRoot (조립 루트) ── player/README.md
+    │   ├── StateMachine/   상태 머신 ── state-machine.md
+    │   ├── Stats/          스탯 시스템 ── stats.md
+    │   ├── Skills/         스킬 시스템 ── skills.md
+    │   ├── Combat/         전투 진입점 ── combat.md
+    │   ├── Buffs/          버프 컨트롤러 ── buffs.md
+    │   ├── Equipment/      장비 컨트롤러 ── equipment.md
+    │   ├── Progression/    레벨/경험치 ── progression.md
+    │   ├── Input/          입력 소스 구현 ── input.md
+    │   ├── Movement/       이동 컨트롤러 ── movement.md
+    │   └── Presentation/   HUD, 스킬 버튼 ── presentation.md
     └── Enemy/              적 유닛·레지스트리·타겟 제공자
 ```
 
