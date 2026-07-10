@@ -25,7 +25,7 @@
 | [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
 | [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
 
-**분석·기록** — [`reports/`](./reports) (진단·작업 로그)
+**분석·기록** — [`reports/`](./reports) (진단·리팩터링 제안·작업 로그)
 
 | 문서 | 내용 |
 |------|------|
