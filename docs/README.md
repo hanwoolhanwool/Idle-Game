@@ -39,6 +39,7 @@
 
 | 문서 | 내용 |
 |------|------|
+| [spec-writing.md](./conventions/spec-writing.md) | 기술 명세서 작성 규칙(문서 종류·섹션 템플릿·Mermaid 규약) |
 | [Git_Commit_Convention.md](./conventions/Git_Commit_Convention.md) | Git 커밋 컨벤션 |
 
 ---
@@ -195,6 +196,6 @@ Assets/Idle Game/Scripts/
 
 ## 5. 문서 규약
 
-문서 작성 규칙(문서 종류·공통 섹션 템플릿·Mermaid 규약·커밋 규칙)의 **단일 기준은 [CLAUDE.md](../CLAUDE.md)의 "기술 명세서 작성 규칙"** 입니다. 이 허브는 규칙을 중복 기술하지 않고 인덱스 역할만 합니다. (규칙 변경은 CLAUDE.md에서만 하고, 여기서는 반복하지 않습니다.)
+문서 작성 규칙(문서 종류·공통 섹션 템플릿·Mermaid 규약·커밋 규칙)의 **단일 기준은 [`conventions/spec-writing.md`](./conventions/spec-writing.md)** 입니다. 이 허브는 규칙을 중복 기술하지 않고 인덱스 역할만 합니다. (규칙 변경은 그 문서에서만 하고, 여기서는 반복하지 않습니다.)
 
-요약: 모든 문서는 **한국어** + GitHub 렌더링 **Mermaid**(Diagram as Code). 상세 템플릿·규칙은 CLAUDE.md 참조.
+요약: 모든 문서는 **한국어** + GitHub 렌더링 **Mermaid**(Diagram as Code). 상세 템플릿·규칙은 [`spec-writing.md`](./conventions/spec-writing.md) 참조.
