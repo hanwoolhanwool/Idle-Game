@@ -17,12 +17,14 @@
 | 도메인 | 인덱스 | 내용 |
 |--------|--------|------|
 | **Player** | [`specs/player/`](./specs/player) | 상태 머신·스탯·스킬·전투·입력·이동·성장·장비·버프·표현 + `PlayerRoot` 조립 명세 (10개 시스템). 심사자용 추천 순서는 [player/README.md](./specs/player/README.md) §0 참조 |
+| **Enemy** | [`specs/enemy/`](./specs/enemy) | 적 처치 경험치 보상 배선([kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) — 적↔성장을 허브+브리지로 분리 |
 
 **설계·계획** — [`design/`](./design) (구현 전·중의 방향)
 
 | 문서 | 내용 |
 |------|------|
 | [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
+| [enemy-kill-exp-reward-plan.md](./design/enemy-kill-exp-reward-plan.md) | 적 처치 경험치 보상 구현 계획서(→ as-built: [specs/enemy/kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) |
 | [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
 
 **분석·기록** — [`reports/`](./reports) (진단·리팩터링 제안·작업 로그)
@@ -187,7 +189,7 @@ Assets/Idle Game/Scripts/
     │   ├── Input/          입력 소스 구현 ── input.md
     │   ├── Movement/       이동 컨트롤러 ── movement.md
     │   └── Presentation/   HUD, 스킬 버튼 ── presentation.md
-    └── Enemy/              적 유닛·레지스트리·타겟 제공자
+    └── Enemy/              적 유닛·레지스트리·타겟 제공자·처치 보상 ── 명세: specs/enemy/
 ```
 
 폴더 = 기능(Feature) 단위로 나뉘며, 각 기능은 `Contracts`(인터페이스) / `Core`(핵심 로직) / `Effects`·`States`·`Adapters`(구현) 하위 구조를 따릅니다.

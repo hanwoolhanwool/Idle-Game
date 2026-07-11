@@ -1,7 +1,7 @@
 # Player 성장 (Progression)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-11 · **관련 기획서**: (링크 예정)
 
 ---
 
@@ -16,7 +16,9 @@
 | 구분 | 내용 |
 |------|------|
 | **포함** | 성장 컨트롤러(`PlayerProgressionController`), 성장 상태(`PlayerProgressionState`), 베이스 스탯 환산 계약·구현(`IPlayerBaseStatResolver`/`PlayerBaseStatResolver`), 성장 설정(`PlayerProgressionConfig`) |
-| **미포함(Out of scope)** | 베이스 스탯을 `StatMachine`에 실제 적용하는 로직([[stats]]의 `PlayerStatOrchestrator.ApplyBaseStats`), 경험치를 **주는** 주체(전투 보상 등 상위 시스템), 장비·버프 성장([[equipment]]·[[buffs]]) |
+| **미포함(Out of scope)** | 베이스 스탯을 `StatMachine`에 실제 적용하는 로직([[stats]]의 `PlayerStatOrchestrator.ApplyBaseStats`), 장비·버프 성장([[equipment]]·[[buffs]]) |
+
+> **갱신(2026-07-11)**: 종전 out of scope였던 "경험치를 **주는** 주체"가 이제 배선되었다. 적 처치 보상이 `IExpReceiver.AddExp`로 경험치를 지급한다. 배선 상세(허브·브리지)는 성장 도메인이 아니라 [적 처치 경험치 보상 계획서](../../design/enemy-kill-exp-reward-plan.md)에 있고, 이 명세는 **수신 계약(`IExpReceiver`) 구현 사실만** 기록한다.
 
 ## 3. 요구사항·설계 목표
 
@@ -109,7 +111,7 @@ sequenceDiagram
 
 | 계약 | 방향 | 설명 |
 |------|------|------|
-| `AddExp(int)` | 외부가 **호출** | 전투 보상 등 상위 시스템의 경험치 지급 |
+| `IExpReceiver.AddExp(int)` | 외부가 **호출** | 경험치 수신 진입점. `PlayerProgressionController`가 구현. 적 처치 브리지(`EnemyExpRewardHandler`)가 이 계약으로만 성장을 안다 |
 | `IPlayerBaseStatResolver.Resolve` | 내부 **위임** | 성장 산출 규칙(교체 가능) |
 | `PlayerStatOrchestrator.ApplyBaseStats` | 이 계층이 **호출** | 베이스 스탯 반영([[stats]]) |
 | `PlayerProgressionController.State` | 외부가 **조회** | HUD 등 성장 상태 표시([[presentation]]) |
@@ -147,6 +149,7 @@ sequenceDiagram
 
 ## 11. 리스크·미결정(TBD)
 
+- **성장 루프의 다음 단절점(레벨→스탯 리졸버)**: 이제 적 처치로 경험치가 들어와 레벨이 오르지만, 아래 "샘플 리졸버" 항목대로 `PlayerBaseStatResolver`가 레벨을 무시해 **스탯이 오르지 않는다**. 경험치 공급원이 배선된 지금, "레벨은 오르는데 강해지지 않음"이 곧바로 체감된다 → **다음 우선 과제**(`docs/reports/base-stat-resolver-level-scaling.md`).
 - **미사용 모델 `PlayerProgressionData`**: `Level`·`BaseHp` 등을 가진 별도 클래스가 있으나 컨트롤러는 `PlayerProgressionState`만 사용. 필드명 오타(`AttakPower`·`Defence`)도 존재 → 정리/삭제 대상.
 - **경험치 공식 하드코딩**: `RequiredExpForNextLevel`이 코드 상수. 레벨 테이블 SO로 이관 여지.
 - **샘플 리졸버**: `PlayerBaseStatResolver`가 config를 그대로 반환(레벨 미반영). 레벨업해도 베이스 스탯이 실제로는 안 오른다 → 실무 리졸버 구현 필요(주석에 명시됨).
@@ -163,6 +166,7 @@ sequenceDiagram
 | 구분 | 파일 | 경로 |
 |------|------|------|
 | 컨트롤러 | `PlayerProgressionController` | `Features/Player/Progression/PlayerProgressionController.cs` |
+| 수신 계약 | `IExpReceiver` | `Features/Player/Progression/IExpReceiver.cs` |
 | 상태 | `PlayerProgressionState` | `Features/Player/Stats/Models/PlayerProgressionState.cs` |
 | 계약 | `IPlayerBaseStatResolver` | `Features/Player/Stats/Resolution/IPlayerBaseStatResolver.cs` |
 | 구현 | `PlayerBaseStatResolver` | `Features/Player/Stats/Resolution/PlayerBaseStatResolver.cs` |
