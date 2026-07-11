@@ -41,6 +41,7 @@ public sealed class PlayerRoot : MonoBehaviour
     private PlayerInputRouter _inputRouter;
     private PlayerDeathHandler _deathHandler;
     private PlayerHitReaction _hitReaction;
+    private EnemyExpRewardHandler _expRewardHandler;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -62,6 +63,7 @@ public sealed class PlayerRoot : MonoBehaviour
     {
         _deathHandler?.Dispose();
         _hitReaction?.Dispose();
+        _expRewardHandler?.Dispose();
 
         if (_combatController != null)
             PlayerRegistry.Unregister(_combatController);
@@ -84,6 +86,9 @@ public sealed class PlayerRoot : MonoBehaviour
         _equipmentController = new PlayerEquipmentController(_statOrchestrator);
         _buffController = new PlayerBuffController(_statOrchestrator);
         _combatController = new PlayerCombatController(_statComponent);
+
+        // 적 처치 보상 → 경험치 배선. 적↔성장의 유일한 결합점(브리지)을 여기서만 안다.
+        _expRewardHandler = new EnemyExpRewardHandler(_progressionController);
     }
 
     private void ComposeSkills()

@@ -1,4 +1,4 @@
-public sealed class PlayerProgressionController
+public sealed class PlayerProgressionController : IExpReceiver
 {
     private readonly PlayerProgressionState _state;
     private readonly PlayerProgressionConfig _config;
