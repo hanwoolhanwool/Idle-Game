@@ -7,17 +7,18 @@ public sealed class PlayerStatOrchestrator
         _statComponent = statComponent;
     }
 
+    /// <summary>
+    /// 성장에서 파생된 베이스 스탯을 StatMachine에 반영한다.
+    /// 어떤 스탯이 성장에 참여하는지는 <see cref="PlayerLevelTable"/>이 결정하므로,
+    /// 여기서는 집합을 순회만 한다(새 스탯이 늘어도 이 메서드는 바뀌지 않는다 — OCP).
+    /// </summary>
     public void ApplyBaseStats(PlayerBaseStatSet baseStats)
     {
+        if (baseStats == null) return;
+
         var stats = _statComponent.Stats;
-        stats.UpdateBaseValue(StatType.MaxHp, baseStats.MaxHp);
-        stats.UpdateBaseValue(StatType.MaxMp, baseStats.MaxMp);
-        stats.UpdateBaseValue(StatType.AttackPower, baseStats.AttackPower);
-        stats.UpdateBaseValue(StatType.AttackSpeed, baseStats.AttackSpeed);
-        stats.UpdateBaseValue(StatType.MoveSpeed, baseStats.MoveSpeed);
-        stats.UpdateBaseValue(StatType.Defense, baseStats.Defense);
-        stats.UpdateBaseValue(StatType.HpRegen, baseStats.HpRegen);
-        stats.UpdateBaseValue(StatType.MpRegen, baseStats.MpRegen);
+        foreach (var entry in baseStats.Entries)
+            stats.UpdateBaseValue(entry.Key, entry.Value);
     }
 
     public void ApplyEquipment(EquipmentDefinition definition)

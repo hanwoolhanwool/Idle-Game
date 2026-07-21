@@ -11,6 +11,8 @@ public sealed class PlayerRoot : MonoBehaviour
 {
     [Header("Config")]
     [SerializeField] private PlayerProgressionConfig ProgressionConfig;
+    [Tooltip("레벨 성장 규칙(필요 경험치·레벨별 베이스 스탯)의 단일 출처. 필수.")]
+    [SerializeField] private PlayerLevelTable levelTable;
     [SerializeField] private EquipmentDefinition[] startEquipments;
     [SerializeField] private BuffDefinition[] startBuffs;
 
@@ -47,7 +49,9 @@ public sealed class PlayerRoot : MonoBehaviour
 
     private void Start()
     {
-        Compose();
+        if (!Compose())
+            return;
+
         Initialize();
         RegisterTickables();
     }
@@ -69,19 +73,30 @@ public sealed class PlayerRoot : MonoBehaviour
             PlayerRegistry.Unregister(_combatController);
     }
 
-    private void Compose()
+    /// <summary>코어 조립에 실패하면(필수 참조 누락) 이후 단계를 진행하지 않는다.</summary>
+    private bool Compose()
     {
-        ComposeCore();
+        if (!ComposeCore())
+            return false;
+
         ComposeSkills();
+        return true;
     }
 
-    private void ComposeCore()
+    private bool ComposeCore()
     {
+        if (levelTable == null)
+        {
+            Debug.LogError("PlayerRoot: levelTable이 연결되지 않았습니다. 레벨 성장이 불가능하므로 조립을 중단합니다.", this);
+            return false;
+        }
+
         _statComponent = new PlayerStatComponent();
         _statOrchestrator = new PlayerStatOrchestrator(_statComponent);
         _progressionController = new PlayerProgressionController(
             ProgressionConfig,
-            new PlayerBaseStatResolver(),
+            levelTable,
+            new PlayerBaseStatResolver(levelTable),
             _statOrchestrator);
         _equipmentController = new PlayerEquipmentController(_statOrchestrator);
         _buffController = new PlayerBuffController(_statOrchestrator);
@@ -89,6 +104,7 @@ public sealed class PlayerRoot : MonoBehaviour
 
         // 적 처치 보상 → 경험치 배선. 적↔성장의 유일한 결합점(브리지)을 여기서만 안다.
         _expRewardHandler = new EnemyExpRewardHandler(_progressionController);
+        return true;
     }
 
     private void ComposeSkills()
