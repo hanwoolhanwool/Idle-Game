@@ -1116,6 +1116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyUnit
   maxHp: 100
+  expReward: 10
 --- !u!212 &1792814347
 SpriteRenderer:
   serializedVersion: 2
@@ -1426,6 +1427,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRoot
   ProgressionConfig: {fileID: 11400000, guid: 406c725a83a42d14e8154f164fb0f68d, type: 2}
+  levelTable: {fileID: 11400000, guid: 0c02c2a8bb0455b47abacdd6f0ecb814, type: 2}
   startEquipments:
   - {fileID: 11400000, guid: ee3bd6797b61b744c885cb9ade37b502, type: 2}
   startBuffs:
