@@ -1,7 +1,8 @@
 /// <summary>
 /// 시전 중 상태 전이를 상태머신에 위임하는 어댑터.
-/// 시전 상태(<see cref="PlayerStateID.Casting"/>)와 복귀 상태(<see cref="PlayerStateID.Idle"/>)를
-/// 호출부(PlayerRoot)에서 명시적으로 주입한다. 평타(Attack)와 스킬 시전을 구분한다(§3-D).
+/// 시전 상태(<see cref="PlayerStateID.Casting"/>)와 복귀 상태(<see cref="PlayerStateID.Idle"/>)는
+/// 기본값 없이 호출부(PlayerRoot)가 반드시 명시한다 — 기본값이 실제 배선과 어긋난 채
+/// 잠복하는 것을 컴파일 타임에 차단하기 위함이다.
 /// </summary>
 public sealed class PlayerStateMachineCastGate : ICastGate
 {
@@ -11,8 +12,8 @@ public sealed class PlayerStateMachineCastGate : ICastGate
 
     public PlayerStateMachineCastGate(
         PlayerStateMachine stateMachine,
-        PlayerStateID castStateID = PlayerStateID.Attack,
-        PlayerStateID returnStateID = PlayerStateID.Idle
+        PlayerStateID castStateID,
+        PlayerStateID returnStateID
     )
     {
         _stateMachine = stateMachine;
