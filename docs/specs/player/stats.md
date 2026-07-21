@@ -1,7 +1,7 @@
 # Player 스탯 시스템 (Stats)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-10 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §3.6 (float 안전 상한·유한형 성장)
 > **관련 리포트**: [Stat 시스템 분석·리팩터링 안내](../../reports/stat-system-refactoring-guide.md)
 
 ---

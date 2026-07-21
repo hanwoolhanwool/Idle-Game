@@ -1,7 +1,7 @@
 # Player 스킬 시스템 (Skills)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-21 · **관련 기획서**: [characters-and-companions.md](../../gdd/characters-and-companions.md) §4.3 (스킬 구조) · [content-roadmap.md](../../gdd/content-roadmap.md) §3.5 (스킬 사용 방식)
 > **관련 계획서**: [combat-skill-plan.md](../../design/combat-skill-plan.md)
 
 ---
@@ -239,6 +239,7 @@ flowchart TD
 - **`CastGate` 기본 인자 불일치**: `PlayerStateMachineCastGate` 생성자 기본값은 `castStateID = Attack`이지만, `PlayerRoot`는 `Casting`을 명시 주입한다. 기본값 경로로 생성하면 미사용 `Attack` 상태로 전이되어 §[[state-machine]]의 TBD와 얽힌다. → 기본값을 `Casting`으로 맞추는 정리 필요.
 - **`CancelCast` vs `EndCast` 비대칭**: `CancelCast`는 쿨다운을 시작하지 않고 `ExitCast`도 하지 않는다(호출자가 상태 전이 책임). 경직 후 `Casting` 잔류 가능성 — 호출 규약을 문서화/방어 필요.
 - **버프 효과의 타겟**: `BuffSkillEffect`는 항상 자신에게 버프를 적용한다. 아군 버프/타겟 버프 확장 시 `SkillContext.Target` 활용 필요.
+- **능동 모드 자동시전 억제 정책 미정(GDD 정합)**: GDD([characters-and-companions](../../gdd/characters-and-companions.md) §4.3)는 능동 모드에서 자동 사용을 **아껴뒀다가 원하는 타이밍에 수동 발동**하는 것을 하이브리드 손맛의 핵심으로 규정한다. 그러나 현재 `AutoCastController`(§6.5)는 모드 구분 없이 **쿨이 되면 즉시** 슬롯 1~5를 발동해, 능동 모드에서도 자동 시전이 계속 돈다. "자동/수동이 같은 슬롯을 공유하고 **발동 주체만 교체**된다"([content-roadmap](../../gdd/content-roadmap.md) §3.5)는 결정이 성립하려면, 능동 모드 진입 시 자동시전을 **억제/보류**하는 스위치(모드 게이트)가 필요하나 어느 명세에도 없다. → 능동 전투(M3) 착수 시 `AutoCastController`에 모드 게이트를 추가해야 한다. 현재는 **설계 공백**으로만 기록한다.
 
 ## 12. 확장 여지
 

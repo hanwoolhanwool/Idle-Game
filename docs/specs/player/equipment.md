@@ -1,7 +1,7 @@
 # Player 장비 (Equipment)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-10 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §6 (재화·장비 흐름) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §6 (섬 자원↔장비, TBD)
 
 ---
 

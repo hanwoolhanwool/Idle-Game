@@ -12,6 +12,13 @@
 1. **전체 아키텍처 개요** — 아래 본문. 프로젝트 전체를 한눈에.
 2. **기능별 상세 기술 명세서** — [`specs/`](./specs) 폴더. 각 시스템의 설계·구조·다이어그램.
 
+**기획** — [`gdd/`](./gdd) (무엇을·왜). 문서 위계의 최상위이며, 아래 모든 명세의 `관련 기획서`가 여기를 가리킨다.
+
+| 문서 | 내용 |
+|------|------|
+| [content-roadmap.md](./gdd/content-roadmap.md) | **콘텐츠 로드맵** — 현재 상태 진단(루프가 닫히지 않음) · 코어 루프 · 재화 Source/Sink · 마일스톤 M0~M4 · 기존 계획서의 마일스톤 매핑 |
+| [characters-and-companions.md](./gdd/characters-and-companions.md) | **캐릭터 5종·동료 시스템** — 방치↔능동 친화도 축 · 섬 5개 자유 이동 · 시작 1명 고정 + 동료 4명 영입(AI 유닛) 구조 |
+
 **아키텍처 명세** — [`specs/`](./specs) (완성된 시스템의 구조·설계 근거). 코드 `Features/<도메인>`를 미러링하는 **도메인 폴더**로 구성한다.
 
 | 도메인 | 인덱스 | 내용 |
@@ -25,6 +32,7 @@
 |------|------|
 | [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
 | [enemy-kill-exp-reward-plan.md](./design/enemy-kill-exp-reward-plan.md) | 적 처치 경험치 보상 구현 계획서(→ as-built: [specs/enemy/kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) |
+| [player-data-management-plan.md](./design/player-data-management-plan.md) | 플레이어 데이터 관리 체계 구현 계획서 — 소유 데이터(레벨·아이템·장비·위치) 계층 신설 + 세이브/로드 |
 | [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
 
 **분석·기록** — [`reports/`](./reports) (진단·리팩터링 제안·작업 로그)

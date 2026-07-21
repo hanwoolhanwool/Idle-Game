@@ -1,7 +1,7 @@
 # Player 전투 진입점 (Combat)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-10 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §5.5 (M3 보스·능동 전투) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §4.1 (방치↔능동 정체성)
 
 ---
 

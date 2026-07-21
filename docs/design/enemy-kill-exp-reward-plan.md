@@ -1,7 +1,7 @@
 # 경험치 공급원(적 처치 보상) 구현 계획서
 
 > **종류**: 설계 명세 (TDD) · **상태**: Draft
-> **최종 갱신**: 2026-07-11 · **관련 기획서**: (링크 예정)
+> **최종 갱신**: 2026-07-11 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §7 (경험치 공급원 = 성장 루프의 첫 링크, 완료)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [combat.md](../specs/player/combat.md)
 
 ---
