@@ -1,7 +1,7 @@
 # Player 도메인 — 아키텍처 명세 인덱스
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **상위 허브**: [docs/README.md](../../README.md)
+> **최종 갱신**: 2026-07-22 · **상위 허브**: [docs/README.md](../../README.md)
 
 이 폴더는 플레이어 도메인(`Features/Player`)의 **시스템별 아키텍처 명세** 모음이다. 이 문서는 (1) 전체 조립을 담당하는 **`PlayerRoot`(Composition Root) 명세**이자 (2) 각 시스템 명세로의 **인덱스**다.
 
@@ -210,7 +210,7 @@ stat → buff → skill → autoCast
 각 시스템의 TBD는 해당 명세 §11에 있다. 조립 관점의 교차 이슈:
 
 - **초기화 순서 암묵 의존**: 베이스→장비→버프→리필 순서가 코드 배치로만 보장됨(명시 계약 아님). 순서 재배치 시 자원 리필 버그 위험.
-- **`PlayerStateMachineCastGate` 기본 인자**: `PlayerRoot`는 `Casting`을 명시 주입하지만 생성자 기본값은 `Attack`([[skills]] §11, [[state-machine]] §11).
+- ~~`PlayerStateMachineCastGate` 기본 인자~~ **해소(2026-07-22)**: 생성자 기본값을 제거해 필수 인자로 전환, 미사용 `Attack` 상태도 제거([[skills]] §11, [[state-machine]] §11).
 - **전역 정적 `PlayerRegistry`**: 싱글 플레이어 가정([[combat]] §11).
 
 ## 11. 확장 여지

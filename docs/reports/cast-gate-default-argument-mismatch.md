@@ -2,8 +2,10 @@
 
 > 작성일: 2026-07-10
 > 대상: `PlayerStateMachineCastGate`, `PlayerStateID.Attack`, `PlayerState_Attack`
-> 성격: **분석·제안 문서** (코드 변경 없음)
+> 성격: **분석·제안 문서** (작성 시점 코드 변경 없음)
 > 관련 명세: [skills.md §11](../specs/player/skills.md) · [state-machine.md §11](../specs/player/state-machine.md)
+
+> **후기(2026-07-22) — 구현 완료.** 채택안은 **A1(기본값 제거·필수 인자화) + B1(`Attack` 상태 제거)**. 생성자에서 두 기본 인자를 제거해 호출부가 시전/복귀 상태를 반드시 명시하게 했고, `PlayerStateID.Attack`·`PlayerState_Attack`·Driver 등록을 삭제했다. B2(평타 전용 상태)를 접은 근거: 평타는 슬롯 0의 스킬로 시전 파이프라인을 공유하므로 별도 상태의 실익이 없고, GDD도 평타/스킬을 상태로 구분하지 않는다 — 필요해지면 명시적 전이와 함께 신설한다(YAGNI). `PlayerStateID`는 어디에도 직렬화되지 않아 enum 항목 제거에 따른 씬/프리팹 드리프트는 없다. 이하 본문은 구현 전 진단의 기록이다.
 
 ---
 

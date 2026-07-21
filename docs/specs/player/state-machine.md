@@ -1,7 +1,7 @@
 # Player 상태 머신 (State Machine)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: (링크 예정 — [[game-genre-hybrid-idle-combat]])
+> **최종 갱신**: 2026-07-22 · **관련 기획서**: (링크 예정 — [[game-genre-hybrid-idle-combat]])
 
 ---
 
@@ -33,7 +33,7 @@
 | 구성요소 | 종류 | 책임 |
 |----------|------|------|
 | `IPlayerState` | interface | 상태 계약: `StateID`, `Enter/Exit`, `Tick/FixedTick` |
-| `PlayerStateID` | enum | 상태 식별자 (None·Idle·Move·Attack·Casting·Hit·Dead) |
+| `PlayerStateID` | enum | 상태 식별자 (None·Idle·Move·Casting·Hit·Dead) |
 | `PlayerStateMachine` | class (순수 C#) | 상태 등록·초기화·전이 엔진. 전이 이벤트 발행 |
 | `PlayerStateContext` | class (순수 C#) | 상태들이 공유하는 읽기 맥락(Transform·입력·이동·플래그) |
 | `PlayerStateBase` | abstract class | 상태 공통 베이스. `StateMachine`·`Context` 접근 제공 |
@@ -89,7 +89,6 @@ classDiagram
     IPlayerState <|.. PlayerStateBase
     PlayerStateBase <|-- PlayerState_Idle
     PlayerStateBase <|-- PlayerState_Move
-    PlayerStateBase <|-- PlayerState_Attack
     PlayerStateBase <|-- PlayerState_Casting
     PlayerStateBase <|-- PlayerState_Hit
     PlayerStateBase <|-- PlayerState_Dead
@@ -140,8 +139,7 @@ stateDiagram-v2
 |------|-------|------|------|------|
 | `Idle` | — | 이동 입력 있으면 `Move`로 | — | `CanProcessInput`일 때만 판정 |
 | `Move` | — | 이동 입력 없으면 `Idle`로 | — | 실제 이동은 이동 컨트롤러가 별도 수행 |
-| `Attack` | — | — | — | **현재 진입 경로 없음** (§11) |
-| `Casting` | — | — | — | 표식(marker) 상태. 진입/복귀는 `CastGate`가 구동 |
+| `Casting` | — | — | — | 표식(marker) 상태. 진입/복귀는 `CastGate`가 구동. 평타(슬롯 0)도 스킬이므로 같은 상태를 쓴다 |
 | `Hit` | 경직 on, 이동 off, 타이머 세팅 | 타이머 소진 시 `Idle`로 | 경직 off, 이동 on | `StunDuration` 동안 입력 차단 |
 | `Dead` | 사망 플래그 on, 이동 off | — | — | 최종 상태(terminal). 부활 전이 미구현 |
 
@@ -221,7 +219,7 @@ CanProcessInput = IsOwner && !IsDead && !IsStunned
 
 ## 11. 리스크·미결정(TBD)
 
-- **`Attack` 상태 미사용**: `PlayerStateID.Attack`와 `PlayerState_Attack`가 등록되어 있으나 `TryChangeState(Attack)` 호출처가 **없다**. 현재 평타·스킬은 모두 `Casting`으로 처리된다. → 평타를 `Casting`과 구분할지, `Attack` 상태를 제거할지 결정 필요.
+- ~~`Attack` 상태 미사용~~ **해소(2026-07-22)**: 어떤 코드도 전이시키지 않던 `PlayerStateID.Attack`·`PlayerState_Attack`를 **제거**했다(B1안). 평타는 슬롯 0의 스킬이므로 `Casting`으로 충분하고, 죽은 상태를 남겨두면 `CastGate` 기본값 같은 잠복 버그의 온상이 된다(근거: `docs/reports/cast-gate-default-argument-mismatch.md`). 평타 전용 상태가 필요해지면 그때 명시적 전이와 함께 신설한다(YAGNI).
 - **`IPlayerAnimationController` 빈 계약**: 멤버가 없어 상태 전이가 애니메이션과 연결되지 않는다. `OnStateChanged` 구독 방식으로 연동할지 상태 `Enter`에서 직접 호출할지 미결정.
 - **`Dead`는 terminal**: 부활/리스폰 전이가 없다. 방치형 특성상 사망 후 자동 부활이 필요하면 전이 추가 필요.
 - **오타성 예외 타입**: 미초기화 시 `InvalidImplementationException`(VisualScripting)을 던진다 — 의미상 `InvalidOperationException`이 적절. 동작에는 영향 없음.
@@ -229,7 +227,7 @@ CanProcessInput = IsOwner && !IsDead && !IsStunned
 ## 12. 확장 여지
 
 - **전이 규칙 테이블화**: 현재 각 상태가 자기 전이를 `Tick`에서 직접 호출한다. 허용 전이표(from→to 화이트리스트)를 엔진에 두면 잘못된 전이를 중앙에서 막을 수 있다(지금은 만들지 않되 구조가 막지 않음).
-- **계층적 상태(HSM)**: `Casting`·`Attack`을 "행동 중" 상위 상태로 묶는 확장 여지. 현재 플랫 구조로 충분.
+- **계층적 상태(HSM)**: `Casting`·`Hit` 등을 "행동 중" 상위 상태로 묶는 확장 여지. 현재 플랫 구조로 충분.
 - **상태별 애니메이션 바인딩**: `OnStateChanged` 이벤트가 이미 열려 있어, 애니메이션 컨트롤러를 구독시키면 엔진 수정 없이 연동 가능.
 
 ## 13. 파일 위치
@@ -245,5 +243,5 @@ CanProcessInput = IsOwner && !IsDead && !IsStunned
 | 코어 | `PlayerStateContext` | `Features/Player/StateMachine/Core/PlayerStateContext.cs` |
 | 코어 | `PlayerStateBase` | `Features/Player/StateMachine/Core/PlayerStateBase.cs` |
 | 코어 | `PlayerStateMachineDriver` | `Features/Player/StateMachine/Core/PlayerStateMachineDriver.cs` |
-| 상태 | `PlayerState_Idle/Move/Attack/Casting/Hit/Dead` | `Features/Player/StateMachine/States/*.cs` |
+| 상태 | `PlayerState_Idle/Move/Casting/Hit/Dead` | `Features/Player/StateMachine/States/*.cs` |
 | 유틸 | `SerializedInterface` | `Shared/Utils/SerializedInterface.cs` |
