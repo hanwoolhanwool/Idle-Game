@@ -1,7 +1,7 @@
 # 적 처치 경험치 보상 (Kill Exp Reward)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-11 · **관련 기획서**: 해당 없음
+> **최종 갱신**: 2026-07-22 · **관련 기획서**: 해당 없음
 > **관련 명세**: [progression.md](../player/progression.md) · [combat.md](../player/combat.md) · **설계 근거**: [enemy-kill-exp-reward-plan.md](../../design/enemy-kill-exp-reward-plan.md)
 
 ---
@@ -191,7 +191,7 @@ stateDiagram-v2
 
 ## 11. 리스크·미결정(TBD)
 
-- **성장 루프의 다음 단절점(레벨→스탯 리졸버)**: 경험치가 들어와 레벨이 올라도, `PlayerBaseStatResolver`가 레벨을 무시해 **스탯이 안 오른다**([[progression]] §11, `docs/reports/base-stat-resolver-level-scaling.md`). 이 배선이 끝난 지금 "레벨은 오르는데 강해지지 않음"이 곧바로 체감된다 → **다음 우선 과제**.
+- ~~성장 루프의 다음 단절점(레벨→스탯 리졸버)~~ **해소(2026-07-21)**: `PlayerLevelTable` 기반 리졸버 구현으로 경험치 → 레벨업 → 베이스 스탯 실증가까지 이어진다([[progression]] §6.2). 남은 단절은 세이브(아래)와 적 재공급(스포너, M0 ② — `docs/design/m0-close-the-loop-plan.md` §6.1).
 - **"누가 죽였는가" 미추적**: 단일 플레이어 가정이라 모든 처치를 그 플레이어의 경험치로 본다. 멀티/소환수 킬 귀속이 필요해지면 발행에 가해자 정보를 실어야 함([[combat]]의 `PlayerRegistry` 단일 플레이어 가정과 동일 한계).
 - **정적 허브 잔류**: `PlayerRegistry`·`EnemyRegistry`와 같은 정적 상태 트레이드오프. 리셋 훅으로 완화하나, 멀티플레이 확장 시 서비스 주입으로 대체 필요.
 - **세이브 부재**: 획득 경험치·레벨은 재기동 시 초기화된다(영속성 별도 과제). 지금은 런타임 진행만.

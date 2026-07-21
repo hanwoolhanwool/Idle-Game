@@ -2,8 +2,10 @@
 
 > 작성일: 2026-07-10
 > 대상: `PlayerBaseStatResolver`, `IPlayerBaseStatResolver`, `PlayerProgressionConfig`
-> 성격: **분석·제안 문서** (코드 변경 없음)
+> 성격: **분석·제안 문서** (작성 시점 코드 변경 없음)
 > 관련 명세: [progression.md §11](../specs/player/progression.md) · [stats.md](../specs/player/stats.md)
+
+> **후기(2026-07-21) — 구현 완료.** 이 제안은 커밋 `58906bd`(리졸버)·`686a470`(PlayerLevelTable 에셋)·`2969838`(씬 연결)으로 구현되었다. 채택안은 **R3(테이블 SO)의 골격에 R1(선형 공식)을 담은 절충** — `PlayerLevelTable`이 경험치 곡선(`BaseRequiredExp × ExpGrowthRate^(level-1)`)과 스탯 성장(`BaseValue + PerLevel × (level-1)`)을 소유한다. §8의 "우선 R1, 이후 R3 승격" 경로를 한 번에 이행한 셈이다. 계약은 본문 예상과 달리 `Resolve(state)`로 바뀌어 **config 의존이 제거**되었다(config는 시작 상태 전용, 설계 근거: [m0-close-the-loop-plan.md §5.1](../design/m0-close-the-loop-plan.md)). 이하 본문은 구현 전 진단의 기록이다.
 
 ---
 

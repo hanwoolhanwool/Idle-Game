@@ -296,13 +296,15 @@ class PlayerSkillController {
 
 ### 11.2 남은 챕터
 
+> **갱신(2026-07-22)**: 아래 취소선 항목은 이후 리팩터링에서 완료되었다(작업 로그: [refactoring-worklog-2026-07-09.md](../reports/refactoring-worklog-2026-07-09.md)).
+
 - **능동 타겟팅** — 능동 공격 버튼이 실제 적을 때리도록(현재 `target=null`이라 공격 스킬은 로그만).
-- **모드 전환** — 방치↔능동 입력 소스 런타임 스왑(보스/레이드/PvP 진입 시).
-- **피격 시스템** — 피격 → `Hit` 전이 + 시전 취소(`CancelCast`/`NotifyHit`/Tick 안전망). 정책: 스킬별 `InterruptibleByHit`. (설계만 완료, 미구현 — "좀비 시전" 문제 잠복)
+- ~~모드 전환~~ ✅ **완료(2026-07-09)** — `PlayerInputRouter`로 방치↔능동 입력 소스 런타임 스왑 구현·씬 배선(작업 로그 §C).
+- ~~피격 시스템~~ ✅ **완료(2026-07-10)** — `PlayerState_Hit`(경직 0.15s)·`PlayerHitReaction`·`PlayerDeathHandler`·`EnemyAttacker` 구현으로 피격 → `Hit` 전이 + 시전 취소가 동작한다(작업 로그 §8-F, as-built: [combat.md](../specs/player/combat.md)).
 - **애니메이션** — `IPlayerAnimationController`(빈 인터페이스) 채우기.
-- **본격 적 시스템** — 스폰/웨이브, `EnemyStat` 기반 스탯, 드롭, 적 반격(현재 최소 스텁).
-- **오프라인 진행** — 방치형 핵심(시간 기반 시뮬레이션).
-- **편성 데이터 분리** — 아래 12장(다음 챕터).
+- **본격 적 시스템** — 지속 스폰([m0-close-the-loop-plan.md](m0-close-the-loop-plan.md) §6.1에서 웨이브가 아닌 지속 스폰으로 확정), `EnemyStat` 기반 스탯, 드롭 → M0 ②·③.
+- **오프라인 진행** — 방치형 핵심(시간 기반 시뮬레이션) → M1.
+- ~~편성 데이터 분리~~ ✅ **완료(2026-07-10)** — `SkillLoadoutConfig` 구현(커밋 `887264b`). 아래 12장은 구현 전 계획의 기록.
 
 ---
 
