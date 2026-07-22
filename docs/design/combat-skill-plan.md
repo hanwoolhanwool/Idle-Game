@@ -3,6 +3,8 @@
 > 대상 프로젝트: Unity 기반 Idle Game
 > 작성 기준: 현재 브랜치(main)의 Player 아키텍처(상태 머신 / 스탯 머신 / 버프 시스템)
 > 설계 원칙: OOP · SOLID · 확장 가능성 · 테스트 가능성 (CLAUDE.md 준수)
+>
+> **후기(2026-07-22)**: 이 문서는 스킬 시스템의 **원래 구현 계획(연혁)**이다. 시전 상태는 이후 전용 `Casting` 상태로 확정되어 `Attack` 상태·`PlayerState_Attack`은 **제거**됐다(커밋 bb9b03e·2600858, 상세: [cast-gate-default-argument-mismatch.md](../reports/cast-gate-default-argument-mismatch.md)). 따라서 아래 §2~§4·§11의 `Attack`·`PlayerState_Attack` 언급은 **작성 시점의 계획**이며, 현재 상태 5종은 Idle/Move/**Casting**/Hit/Dead다([state-machine.md](../specs/player/state-machine.md) §11).
 
 ---
 

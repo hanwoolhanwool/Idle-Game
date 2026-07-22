@@ -27,8 +27,8 @@ M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을
 
 핵심 설계 판단은 셋이다.
 
-1. **"레벨 → 스탯"의 단일 출처는 데이터(SO)다.** 성장 공식을 코드에 하드코딩하지 않고 `PlayerLevelTable`(SO)에 둔다. 현재 `PlayerProgressionController.RequiredExpForNextLevel()`이 `100 + (level-1) * 20`을 **코드에 박아 두고 있는데**, 이는 기획자가 밸런스를 만질 수 없는 구조다.
-2. **베이스 스탯 집합을 `StatType` 키 기반으로 전환한다.** 현재 `PlayerBaseStatSet`은 8개 고정 필드라 `StatType` 20종 중 8종만 레벨 성장에 참여할 수 있다. 레벨업으로 치명타율을 올리는 것이 **구조적으로 불가능**하다.
+1. **"레벨 → 스탯"의 단일 출처는 데이터(SO)다.** 성장 공식을 코드에 하드코딩하지 않고 `PlayerLevelTable`(SO)에 둔다. 결함1 해소 전에는 필요 경험치가 `PlayerProgressionController`에 박혀 있어 기획자가 밸런스를 만질 수 없었으나, 현재는 `RequiredExpForNextLevel`이 `PlayerLevelTable.RequiredExp`로 위임한다(§0 진행 현황).
+2. **베이스 스탯 집합을 `StatType` 키 기반으로 전환한다.** 결함1 해소 전 `PlayerBaseStatSet`은 8개 고정 필드라 `StatType` 20종 중 8종만 레벨 성장에 참여할 수 있었고, 레벨업으로 치명타율을 올리는 것이 **구조적으로 불가능**했다. 현재는 `Dictionary<StatType, float>` 키 기반으로 전환돼(§8) 어떤 스탯이든 `Growths`에 추가하면 성장에 참여한다.
 3. **적 공급은 스테이지 데이터가 결정한다.** 스포너는 "무엇을 몇 마리 유지할지"를 스스로 알지 않고 `StageDefinition`(SO)에서 받는다. 스테이지 추가가 **에셋 생성 1건**으로 끝나게 한다([content-roadmap.md](../gdd/content-roadmap.md) §3.5의 "단일 씬 + 데이터 교체" 결정).
 
 ## 2. 범위(Scope)

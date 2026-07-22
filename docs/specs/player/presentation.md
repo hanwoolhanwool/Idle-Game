@@ -70,7 +70,7 @@ classDiagram
     IPlayerHud <|.. DebugPlayerHud
     PlayerHudBinder --> IPlayerHud : 렌더 위임
     PlayerHudBinder --> PlayerHudSnapshot : 생성
-    PlayerHudBinder --> PlayerStatComponent : OnStatChanged 구독
+    PlayerHudBinder --> PlayerStatComponent : Stats.OnStatChanged 구독
     SkillButton --> PlayerSkillController : TryUseSkill
 ```
 
@@ -126,7 +126,7 @@ flowchart TD
 | 계약 | 방향 | 설명 |
 |------|------|------|
 | `IPlayerHud.Render` | `Binder`가 **호출** | HUD 구현 위임(로그↔실 UI 교체) |
-| `PlayerStatComponent.OnStatChanged` | `Binder`가 **구독** | 스탯 변경 신호([[stats]]) |
+| `PlayerStatComponent.Stats.OnStatChanged` | `Binder`가 **구독** | 스탯 변경 신호. `StatMachine`(`.Stats`)이 발행([[stats]]) |
 | `PlayerSkillController.TryUseSkill` | `SkillButton`이 **호출** | 시전 진입점([[skills]]) |
 | `PlayerRoot.Debug*` 훅 | `DebugCommands`가 **호출** | 에디터 디버그(내부 API) |
 | `Bind(...)` | `PlayerRoot`가 **호출** | HUD·버튼 배선 |
