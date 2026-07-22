@@ -8,6 +8,7 @@
 | [m0-close-the-loop-plan.md](./m0-close-the-loop-plan.md) | 진행 중 | **M0 "루프 닫기" 정본** — 결함 1(레벨→스탯) 완료, 결함 2(스포너)·3(세이브) 미착수 |
 | [player-data-management-plan.md](./player-data-management-plan.md) | Draft | 소유 데이터(레벨·아이템·장비·위치) 계층 + 세이브/로드의 정본 |
 | [skill-menu-plan.md](./skill-menu-plan.md) | Draft (M2) | 스킬 창(인벤토리·습득·장착 UI) — 착수 보류 |
+| [server-application-plan.md](./server-application-plan.md) | Draft (별도 기술 트랙) | 서버 적용 — 클라 로컬 전투 + 서버 권위(계정·저장·presence+채팅·실시간 매치 룸). 파티 보스전 → 실시간 PvP 순. 스택은 스파이크에서 확정 |
 | [combat-skill-plan.md](./combat-skill-plan.md) | 연혁 | 스킬 시스템 구현 계획서 (as-built: [skills.md](../specs/player/skills.md)) |
 | [enemy-kill-exp-reward-plan.md](./enemy-kill-exp-reward-plan.md) | 구현 완료 | 적 처치 경험치 보상 (as-built: [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)) |
 | [player-root-refactoring-proposal.md](./player-root-refactoring-proposal.md) | 시점 기록(2026-07-09) | PlayerRoot 생태계 리팩터링 제안 — 후기 참조 |

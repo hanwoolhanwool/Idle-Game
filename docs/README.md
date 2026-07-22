@@ -36,6 +36,7 @@
 | [player-data-management-plan.md](./design/player-data-management-plan.md) | 플레이어 데이터 관리 체계 구현 계획서 — 소유 데이터(레벨·아이템·장비·위치) 계층 신설 + 세이브/로드 |
 | [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
 | [skill-menu-plan.md](./design/skill-menu-plan.md) | 스킬 창(스킬 인벤토리·습득·장착 UI) 구현 계획서 — M2 대상, 착수 보류 |
+| [server-application-plan.md](./design/server-application-plan.md) | 서버 적용 계획서 — "전투는 클라 로컬, 데이터·판정은 서버 권위" 하이브리드. 계정·권위 저장·presence+채팅·실시간 매치 룸(파티 보스전→PvP)의 4층 |
 
 **분석·기록** — [`reports/`](./reports) (진단·리팩터링 제안·작업 로그)
 
