@@ -15,8 +15,9 @@
 | — | 🟠 P1 `PlayerStatComponent` 책임 분리 | ⏳ 예정 | 자원 풀/전투 공식 분리 |
 | — | 🟠 P1 `ModifierLayer` 정책 확정 | ⏳ 예정 | 정렬용 유지 vs 그룹 곱연산 결정 필요 |
 | — | 🟡 P2 변환 일원화·모델 통합·정리 | ⏳ 예정 | Factory 일원화, 죽은 코드 제거, 네임스페이스, 오타 |
+| 2026-07-21 | 🟡 P2 일부 — `PlayerProgressionData` 삭제 | ✅ 완료 | 커밋 58906bd(M0 레벨 테이블 작업)에서 선행 삭제. `TimedBuffData`·`EquipmentFactory`·`StatModifierFactory`는 여전히 P2 대기 |
 
-> **부수 효과**: P0 수정으로 `EquipmentFactory.DefinitionToRuntimeData`, `PlayerProgressionData`, `TimedBuffData`, `PlayerStatComponent` 의 일부 `using` 이 미사용 상태가 됨 → P2(변환 일원화) 단계에서 함께 제거 예정.
+> **부수 효과**: P0 수정으로 `EquipmentFactory.DefinitionToRuntimeData`, ~~`PlayerProgressionData`~~(2026-07-21 삭제됨), `TimedBuffData`, `PlayerStatComponent` 의 일부 `using` 이 미사용 상태가 됨 → P2(변환 일원화) 단계에서 함께 제거 예정.
 
 ---
 
@@ -163,7 +164,7 @@ value *= (1f + additiveMulSum);   // 모든 레이어의 MultiplyAdditive가 한
 
 - 같은 "Definition → Modifier" 변환이 **3곳**에 흩어져 있음:
   `PlayerStatOrchestrator.ApplyRuntimeModifiers`, `EquipmentFactory.DefinitionToRuntimeData`, (`PlayerStatComponent.ApplyEquipments` 의 RuntimeData 소비).
-- DTO 중복: `PlayerProgressionData` ≈ `PlayerBaseStatSet` (거의 동일, 전자는 빈 값으로만 쓰임).
+- DTO 중복: ~~`PlayerProgressionData` ≈ `PlayerBaseStatSet`~~ (전자는 2026-07-21 삭제 완료 — §0 진행 로그 참조).
 - 버프 런타임: `TimedBuffData`(List<StatModifier>) vs `BuffRuntimeInstance`(RuntimeModifierEntry[]) 가 공존.
 
 → 변환 로직을 **한 곳(Factory)** 으로 모으고, 사용되지 않는 모델을 제거해야 합니다.
@@ -236,7 +237,7 @@ private void Initialize()
 
 "Definition → StatModifier" 변환을 **`StatModifierFactory` / `EquipmentFactory` 한 곳**으로 모으고,
 `PlayerStatOrchestrator.ApplyRuntimeModifiers` 도 이 팩토리를 호출하게 합니다.
-`PlayerProgressionData` 를 제거하고 `PlayerBaseStatSet` 으로 통일.
+~~`PlayerProgressionData` 를 제거하고 `PlayerBaseStatSet` 으로 통일.~~ (2026-07-21 삭제 완료)
 
 #### 단계 3 — 레이어 정책 확정
 

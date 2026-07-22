@@ -3,6 +3,7 @@
 > 작성일: 2026-07-10
 > 대상: `PlayerProgressionData`, `TimedBuffData`, `EquipmentRuntimeData`, `EquipmentFactory`, `StatModifierFactory`
 > 성격: **분석·제안 문서** (코드 변경 없음)
+> **후기(2026-07-22)**: 제안 중 `PlayerProgressionData` **삭제는 이행됨**(2026-07-21, 커밋 58906bd — M0 레벨 테이블 작업에 포함). `TimedBuffData`·`EquipmentRuntimeData`·`EquipmentFactory`·`StatModifierFactory`는 **아직 미처리**로 코드에 남아 있다. 이하 본문은 작성 시점의 기록이다.
 > 관련 명세: [stats.md §11](../specs/player/stats.md) · [equipment.md §11](../specs/player/equipment.md) · [buffs.md §11](../specs/player/buffs.md) · [progression.md §11](../specs/player/progression.md)
 
 ---

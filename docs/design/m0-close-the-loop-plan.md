@@ -1,7 +1,7 @@
 # M0 — 루프 닫기(Close the Loop) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: Draft
-> **최종 갱신**: 2026-07-21 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
+> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯) **구현 완료**, 결함 2(스포너)·3(세이브) 미착수
+> **최종 갱신**: 2026-07-22 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [stats.md](../specs/player/stats.md) · [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)
 > **관련 계획서**: [player-data-management-plan.md](./player-data-management-plan.md) (세이브·재화의 정본 — 이 문서는 그중 M0 범위만 구현한다)
 
@@ -13,11 +13,13 @@
 
 | # | 끊긴 지점 | 코드 근거 |
 |---|-----------|-----------|
-| 1 | **레벨업해도 강해지지 않는다** | `PlayerBaseStatResolver.Resolve(progressionState, config)`가 **`progressionState`를 받고도 쓰지 않는다.** 반환값이 전적으로 `config`의 시작 스탯이라, 레벨 1과 레벨 100의 스탯이 동일하다 |
+| 1 | ~~**레벨업해도 강해지지 않는다**~~ **해소(2026-07-21, 커밋 58906bd)** | 당시 `Resolve(progressionState, config)`가 `progressionState`를 받고도 쓰지 않았다. 현재는 `Resolve(state)`가 `PlayerLevelTable.ResolveStats(state.Level)`로 레벨을 실제 반영한다([base-stat-resolver-level-scaling.md](../reports/base-stat-resolver-level-scaling.md)) |
 | 2 | **적이 다시 나오지 않는다** | `EnemyUnit.Die()`가 `SetActive(false)`로 끝난다. 적을 재공급하는 주체가 코드 어디에도 없다 |
 | 3 | **성장이 휘발된다** | 저장·로드가 전무하다. `GameManager`는 `Start()`/`Update()`가 빈 스텁이다 |
 
 M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을 목표로 한다. 재미·밸런싱·콘텐츠 물량은 M1 이후다.
+
+> **진행 현황(2026-07-22)**: 결함 1은 구현 완료 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제까지 §5.1·§7·§8의 해당 설계가 모두 코드에 반영됐다. **남은 범위는 결함 2(스포너·스테이지)와 결함 3(골드·세이브·`GameManager`)이다.**
 
 ## 1. 개요·목적
 
@@ -42,7 +44,7 @@ M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을
 
 | 요구사항 | 설계적 해석 |
 |----------|-------------|
-| 레벨이 오르면 실제로 강해진다 | `PlayerLevelTable`이 레벨→스탯을 결정. `PlayerBaseStatResolver`가 테이블을 읽어 `PlayerBaseStatSet`을 만든다. **`Resolve`에서 `config` 인자를 제거**해 `Resolve(PlayerProgressionState)`로 바꾼다 — `config`는 "시작 상태"를 담고, "레벨→성장 규칙"은 `PlayerLevelTable`의 책임이라, 두 출처를 동시에 참조하면 스탯의 진실 공급원이 둘로 갈라진다(SRP). 시그니처가 바뀌므로 호출부(`PlayerProgressionController`)도 **함께 갱신**한다 |
+| 레벨이 오르면 실제로 강해진다 | `PlayerLevelTable`이 레벨→스탯을 결정. `PlayerBaseStatResolver`가 테이블을 읽어 `PlayerBaseStatSet`을 만든다. **`Resolve`에서 `config` 인자를 제거**해 `Resolve(PlayerProgressionState)`로 바꾼다 — `config`는 "시작 상태"를 담고, "레벨→성장 규칙"은 `PlayerLevelTable`의 책임이라, 두 출처를 동시에 참조하면 스탯의 진실 공급원이 둘로 갈라진다(SRP). 시그니처가 바뀌므로 호출부(`PlayerProgressionController`)도 **함께 갱신**한다 — **구현 완료(2026-07-21)** |
 | 기획자가 코드 없이 밸런스를 조정한다 | 필요 경험치·스탯 성장을 **전부 SO 필드로**. 레벨 100개를 손으로 채우지 않도록 **공식(기본값 + 레벨당 증가) + 선택적 오버라이드** 구조 |
 | 적이 끊기지 않고 공급된다 | `EnemySpawner`가 **동시 생존 수를 목표치로 유지**한다(지속 스폰). 죽은 적을 풀에 반납하고 재사용 |
 | 스테이지 추가가 값싸다 | `StageDefinition`(SO)이 프리팹·동시 수·스탯 배율을 담는다. 스포너는 이를 주입받을 뿐 스테이지를 모른다 |
@@ -269,17 +271,17 @@ sequenceDiagram
 | **ISP** | `IExpReceiver` / `IGoldReceiver` 분리. 보상 허브는 필요한 계약만 안다 |
 | **DIP** | `PlayerBaseStatResolver`가 SO를 주입받고, `GameManager`가 `ISaveRepository` 추상에 의존한다 |
 
-**가장 중요한 리팩터 — `PlayerBaseStatSet`의 키 기반 전환**
+**가장 중요한 리팩터 — `PlayerBaseStatSet`의 키 기반 전환 (구현 완료, 2026-07-21)**
 
 ```
-// 현재: 8개 고정 필드 → StatType 20종 중 8종만 성장 가능
+// 변경 전: 8개 고정 필드 → StatType 20종 중 8종만 성장 가능
 public sealed class PlayerBaseStatSet { public float MaxHp; public float MaxMp; ... }
 
-// 변경: StatType 키 → 새 스탯 추가 시 이 클래스도 오케스트레이터도 안 바뀜
+// 변경 후(현재 코드): StatType 키 → 새 스탯 추가 시 이 클래스도 오케스트레이터도 안 바뀜
 public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 ```
 
-`PlayerStatOrchestrator.ApplyBaseStats()`가 현재 8줄을 하드코딩하는데, 이는 **새 스탯을 레벨 성장에 넣을 때마다 수정해야 하는 OCP 위반**이다. 키 기반 전환 후에는 `foreach`로 순회한다. 영향 범위는 3개 파일(`PlayerBaseStatSet`·`PlayerStatOrchestrator`·`PlayerBaseStatResolver`)로 작다.
+변경 전 `PlayerStatOrchestrator.ApplyBaseStats()`는 8줄을 하드코딩했는데, 이는 **새 스탯을 레벨 성장에 넣을 때마다 수정해야 하는 OCP 위반**이었다. 키 기반 전환으로 현재는 `foreach`로 순회한다. 영향 범위는 3개 파일(`PlayerBaseStatSet`·`PlayerStatOrchestrator`·`PlayerBaseStatResolver`)이었다.
 
 ## 9. Unity 특화
 
@@ -299,7 +301,7 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 |---|------|------|
 | 1 | `PlayerLevelTable.RequiredExp` | 레벨 1→2가 `BaseRequiredExp`와 같다. 레벨이 오를수록 단조 증가한다 |
 | 2 | `PlayerLevelTable.ResolveStats` | 레벨 1의 `AttackPower` = `BaseValue`. 레벨 N = `Base + PerLevel × (N-1)` |
-| 3 | **`PlayerBaseStatResolver`가 레벨을 반영한다** | 레벨 1과 레벨 50의 결과가 **다르다** (← 현재 버그의 회귀 테스트) |
+| 3 | **`PlayerBaseStatResolver`가 레벨을 반영한다** | 레벨 1과 레벨 50의 결과가 **다르다** (← 해소된 결함 1의 회귀 테스트) |
 | 4 | `PlayerProgressionController.AddExp` | 경험치 초과분이 다음 레벨로 이월된다. 여러 레벨 동시 상승이 가능하다 |
 | 5 | `PlayerProgressionController` | `MaxLevel` 도달 시 더 이상 오르지 않고 경험치가 넘치지 않는다 |
 | 6 | `PlayerWallet` | `TrySpend`가 잔액 부족 시 `false`를 반환하고 **잔액을 건드리지 않는다**(원자성) |
@@ -313,7 +315,7 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 |------|------|
 | **성장 곡선 계수** | `PerLevel` 값은 임시. 실제 튜닝은 M1에서 스테이지 난이도와 함께 |
 | **`GoldGainRate` 연결** | `StatType.GoldGainRate`가 이미 존재. M0에서는 **연결하지 않고** 보상을 그대로 지급한다. M4의 경제 확장에서 배율로 연결 |
-| **`PlayerProgressionData` 중복 모델** | `PlayerBaseStatSet`과 중복이며 오타(`BaseAttakPower`)까지 있는 **미사용 클래스**로 보인다. M0에서 삭제 여부 확인 필요 |
+| ~~**`PlayerProgressionData` 중복 모델**~~ | **해소(2026-07-21, 커밋 58906bd)** — 미사용·오타(`BaseAttakPower`) 클래스로 확인되어 삭제 완료. `PlayerBaseStatSet`(StatType 키 기반)이 단일 모델이다 |
 | **적 스탯의 스테이지 스케일링** | M0는 단일 스테이지라 배율이 불필요. M1에서 `StageDefinition`에 배율 필드 추가 |
 | **재화 식별자·다중 통화** | 정본은 `WalletSaveSection`을 `(CurrencyId, long)` 목록으로 둔다. M0는 골드 하나만 다루므로 `CurrencyId`를 문자열/enum 중 무엇으로 둘지는 정본 §11대로 미룬다. `PlayerWallet`의 잔액 API는 `long` 기준 |
 
@@ -345,7 +347,7 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 
 ## 14. 착수 순서
 
-1. **레벨 테이블 + 리졸버** — 가장 작고 독립적. 다른 시스템을 건드리지 않고 §0의 결함 1을 닫는다.
+1. ~~**레벨 테이블 + 리졸버**~~ **완료(2026-07-21)** — 가장 작고 독립적. 다른 시스템을 건드리지 않고 §0의 결함 1을 닫았다.
 2. **스포너 + 풀** — 결함 2를 닫는다. 1의 효과를 관찰할 무대가 된다.
 3. **골드 + 보상 페이로드** — 재화 축 신설.
 4. **세이브 + `GameManager`** — 결함 3을 닫는다. 앞의 셋이 다 있어야 저장할 것이 생긴다.

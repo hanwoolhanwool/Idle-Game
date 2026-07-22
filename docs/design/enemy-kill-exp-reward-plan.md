@@ -1,7 +1,7 @@
 # 경험치 공급원(적 처치 보상) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: Draft
-> **최종 갱신**: 2026-07-11 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §7 (경험치 공급원 = 성장 루프의 첫 링크, 완료)
+> **종류**: 설계 명세 (TDD) · **상태**: **구현 완료** — as-built 명세는 [specs/enemy/kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)가 정본이며, 이 문서는 계획 연혁으로 보존한다
+> **최종 갱신**: 2026-07-22 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §7 (경험치 공급원 = 성장 루프의 첫 링크, 완료)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [combat.md](../specs/player/combat.md)
 
 ---
@@ -189,7 +189,7 @@ stateDiagram-v2
 
 ## 11. 리스크·미결정(TBD)
 
-- **성장 루프의 다음 단절점(레벨→스탯 리졸버)**: 경험치가 들어와 레벨이 올라도, `PlayerBaseStatResolver`가 레벨을 무시해 **스탯이 안 오른다**([[progression]] §11, `docs/reports/base-stat-resolver-level-scaling.md`). 이 배선이 끝나면 "레벨은 오르는데 강해지지 않음"이 곧바로 체감된다 → **다음 우선 과제**.
+- ~~**성장 루프의 다음 단절점(레벨→스탯 리졸버)**~~ **해소(2026-07-21, 커밋 58906bd)**: 당시 `PlayerBaseStatResolver`가 레벨을 무시해 스탯이 오르지 않았으나, `PlayerLevelTable` 신설과 리졸버 구현으로 배선이 완료됐다(`docs/reports/base-stat-resolver-level-scaling.md`). 경험치 → 레벨업 → 스탯 증가가 끝까지 이어진다.
 - **"누가 죽였는가" 미추적**: 단일 플레이어 가정이라 모든 처치를 그 플레이어의 경험치로 본다. 멀티/소환수 킬 귀속이 필요해지면 발행에 가해자 정보를 실어야 함([[combat]]의 `PlayerRegistry` 단일 플레이어 가정과 동일 한계).
 - **정적 허브 잔류**: `PlayerRegistry`·`EnemyRegistry`와 같은 정적 상태 트레이드오프. 리셋 훅으로 완화하나, 멀티플레이 확장 시 서비스 주입으로 대체 필요.
 - **세이브 부재**: 획득 경험치·레벨은 재기동 시 초기화된다(영속성 별도 과제). 지금은 런타임 진행만.

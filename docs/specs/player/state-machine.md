@@ -15,14 +15,14 @@
 
 | 구분 | 내용 |
 |------|------|
-| **포함** | 상태 등록·초기화·전이 엔진(`PlayerStateMachine`), 상태 계약(`IPlayerState`), 6개 상태 구현, MonoBehaviour 구동기(`PlayerStateMachineDriver`), 상태가 참조하는 컨텍스트(`PlayerStateContext`) |
+| **포함** | 상태 등록·초기화·전이 엔진(`PlayerStateMachine`), 상태 계약(`IPlayerState`), 5개 상태 구현(Idle·Move·Casting·Hit·Dead), MonoBehaviour 구동기(`PlayerStateMachineDriver`), 상태가 참조하는 컨텍스트(`PlayerStateContext`) |
 | **미포함(Out of scope)** | 전이를 **유발하는** 쪽의 로직 — 피격→`Hit`([[combat]]의 `PlayerHitReaction`), 사망→`Dead`(`PlayerDeathHandler`), 시전→`Casting`([[skills]]의 `PlayerStateMachineCastGate`). 상태 머신은 전이 요청을 **받아 처리**할 뿐, 언제 전이할지는 각 도메인이 결정한다. 애니메이션 재생(현재 `IPlayerAnimationController`는 빈 계약) |
 
 ## 3. 요구사항·설계 목표
 
 | 요구사항 | 설계적 해석 |
 |----------|-------------|
-| 방치·능동 두 모드가 같은 상태 흐름을 쓴다 | 상태는 `IMoveInputSource` 추상만 읽는다. 입력 소스 교체로 모드 전환 |
+| 방치·능동 두 모드가 같은 상태 흐름을 쓴다 | 상태는 입력의 출처를 모른다 — `IPlayerMovementController.MoveInput`만 읽고, 그 앞단의 입력 소스(조이스틱/AI)는 `IMoveInputSource` 교체로 전환 |
 | 전이 도중 재진입(reentrancy)으로 상태가 깨지지 않아야 | `IsTransitioning` 가드로 전이 중 재전이 차단 |
 | 새 상태 추가 시 엔진을 수정하지 않아야 (OCP) | `RegisterState`로 딕셔너리에 등록. 엔진은 상태 종류를 모름 |
 | 잘못된 상태 조작을 조기에 검출 | 미등록/중복/미초기화 시 예외를 던져 조립 단계에서 실패 |
@@ -37,7 +37,7 @@
 | `PlayerStateMachine` | class (순수 C#) | 상태 등록·초기화·전이 엔진. 전이 이벤트 발행 |
 | `PlayerStateContext` | class (순수 C#) | 상태들이 공유하는 읽기 맥락(Transform·입력·이동·플래그) |
 | `PlayerStateBase` | abstract class | 상태 공통 베이스. `StateMachine`·`Context` 접근 제공 |
-| `PlayerState_*` | class ×6 | 개별 상태 구현 |
+| `PlayerState_*` | class ×5 | 개별 상태 구현 |
 | `PlayerStateMachineDriver` | MonoBehaviour | Unity 생명주기와 엔진의 접합. 조립·`Tick`/`FixedTick` 펌프 |
 
 ```mermaid
@@ -177,7 +177,7 @@ CanProcessInput = IsOwner && !IsDead && !IsStunned
 
 | 계약 | 방향 | 설명 |
 |------|------|------|
-| `IMoveInputSource` | 상태 머신이 **소비** | 이동 입력 벡터 공급. 조이스틱/자동전투가 구현 → [[input]] |
+| `IMoveInputSource` | 컨텍스트에 **보관만** | 이동 입력 계약(조이스틱/자동전투가 구현 → [[input]]). 현재 어떤 상태도 직접 읽지 않으며, 입력 판정은 `IPlayerMovementController.MoveInput` 경유([[movement]]) |
 | `IPlayerMovementController` | 상태 머신이 **소비** | `MoveInput` 조회·`SetMovementEnabled` 호출 → [[movement]] |
 | `IPlayerAnimationController` | 상태 머신이 **소비** | 현재 **빈 계약**(멤버 없음). 애니메이션 연동 자리만 확보 |
 | `PlayerStateMachine.StateMachine` (via Driver) | 외부에 **노출** | `PlayerRoot`가 이 참조를 꺼내 `CastGate`·`DeathHandler`·`HitReaction`에 주입 |
@@ -199,7 +199,7 @@ CanProcessInput = IsOwner && !IsDead && !IsStunned
 
 ## 9. Unity 특화
 
-- **초기화 순서**: `PlayerStateMachineDriver.Awake()`에서 `SerializedInterface.TryResolve`로 직렬화된 MonoBehaviour를 인터페이스로 해석 → 상태 6개 생성·등록 → `Initialize(Idle)`. `PlayerRoot`(`Start`)보다 먼저 실행되어, `Root`가 `Start`에서 `driver.StateMachine`을 안전하게 참조한다.
+- **초기화 순서**: `PlayerStateMachineDriver.Awake()`에서 `SerializedInterface.TryResolve`로 직렬화된 MonoBehaviour를 인터페이스로 해석 → 상태 5개 생성·등록 → `Initialize(Idle)`. `PlayerRoot`(`Start`)보다 먼저 실행되어, `Root`가 `Start`에서 `driver.StateMachine`을 안전하게 참조한다.
 - **틱 이원화**: `Update`→`Tick`(입력·전이 판정), `FixedUpdate`→`FixedTick`(물리성 행동). 현재 `FixedTick`을 쓰는 상태는 없다.
 - **직렬화 인터페이스**: Unity는 인터페이스를 인스펙터에 직렬화하지 못한다. `MonoBehaviour` 필드로 받아 `SerializedInterface.TryResolve`로 변환하는 우회를 사용한다(`Shared/Utils/SerializedInterface.cs`).
 - **성능 예산**: 전이는 딕셔너리 조회 1회 + 델리게이트 호출. 프레임당 상태 1개만 `Tick`. GC Alloc 없음(전이 시 이벤트 델리게이트 제외).

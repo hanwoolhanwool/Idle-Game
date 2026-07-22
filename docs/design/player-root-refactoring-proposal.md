@@ -3,6 +3,7 @@
 > 작성일: 2026-07-09
 > 대상: `PlayerRoot`가 조립·구동하는 플레이어 의존 그래프 전체
 > 성격: **분석·제안 문서** (코드 변경 없음). 팀이 우선순위를 판단하기 위한 로드맵.
+> **후기(2026-07-22)**: §7-D의 "CastGate는 `Attack` 상태 재사용, 전용 `Casting` 상태는 후속"은 이후 뒤집혔다 — `PlayerState_Casting` 신설, `Attack` 상태 제거, CastGate 기본 인자 필수화(커밋 2600858, 상세: [cast-gate-default-argument-mismatch.md](../reports/cast-gate-default-argument-mismatch.md)). §2 의존 트리의 "상태 5종(Idle/Move/Attack/Hit/Dead)"도 현재는 Attack 대신 Casting이다. 이하 본문은 작성 시점의 기록이다.
 
 ---
 

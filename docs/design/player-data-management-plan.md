@@ -437,7 +437,7 @@ public interface IReadOnlyInventory
 - **기기 시간 조작**: `LastSaveUtcTicks` 기반 오프라인 보상은 시계를 앞으로 돌리면 무한 파밍된다. 최소 방어로 "저장 시각이 이전 저장보다 과거면 무효" 검증을 넣되, 근본 해결은 서버 시간이다.
 - **`EquipmentDefinition` SourceId 규약 변경의 파급**: `item:{ItemId}` → `item:{uid}` 변경은 [[stats]] §6.4·[[equipment]]의 문서 갱신을 동반한다. 기존 세이브가 없으므로 지금이 바꾸기 가장 싼 시점이다.
 - **`PlayerProgressionConfig`의 역할 중복**: `StartLevel`·`StartExp`가 SO에 있는데 세이브가 생기면 이 필드는 **신규 게임 전용**이 된다. 이름/그룹을 `[Header("New Game Defaults")]`로 재정리 필요.
-- **미사용 모델 `PlayerProgressionData`**: [[progression]] §11이 지적한 정리 대상. 세이브 DTO를 새로 만들면서 함께 삭제한다(혼동 방지).
+- ~~**미사용 모델 `PlayerProgressionData`**~~: **이미 삭제됨(2026-07-21, 커밋 58906bd)** — 세이브 DTO 신설을 기다리지 않고 M0 레벨 테이블 작업에서 선행 정리됐다.
 - **인벤토리 용량 제한 미정**: 무한 인벤토리로 시작한다. 용량·정렬·자동 판매는 기획 확정 후. (재화는 `WalletSaveSection`으로 분리돼 있어 용량 제한이 들어와도 칸을 잡아먹지 않는다 — §5.1)
 - **재화 식별자 체계 미정**: `CurrencyId`를 문자열(`"gold"`)로 둘지 enum으로 둘지 결정 필요. 문자열은 확장이 자유롭지만 오타가 런타임까지 산다. 종류가 소수로 고정될 것 같으면 enum이 낫다. **골드 하나만 있는 지금은 결정을 미룬다.**
 - **`WalletSaveSection`의 금액 타입**: `long`으로 시작한다. 방치형은 인플레이션이 심해 `int` 상한(21억)을 실제로 넘길 수 있다. 그 위(자릿수 폭발)는 BigInteger가 아니라 **가수·지수 표현**이 통상적이나, 밸런싱이 정해지기 전엔 과설계다.
@@ -485,5 +485,5 @@ public interface IReadOnlyInventory
 | 수정 | `EquipmentDefinition.cs` | `Slot` 필드 추가 | 2 |
 | 수정 | `PlayerEquipmentController.cs` | UID 기반 장착·슬롯 교체 + `ISaveable` | 2 |
 | 수정 | `PlayerStatOrchestrator.cs` | SourceId를 `item:{uid}`로 | 2 |
-| 삭제 | `PlayerProgressionData.cs` | 미사용 모델 정리([[progression]] §11) | 1 |
+| ~~삭제~~ **완료** | `PlayerProgressionData.cs` | 미사용 모델 정리([[progression]] §11) — 2026-07-21 커밋 58906bd에서 이미 삭제됨 | 1 |
 | 수정 | `docs/specs/player/progression.md` · `equipment.md` · `stats.md` · `README.md` | 같은 PR에서 갱신 | 각 단계 |

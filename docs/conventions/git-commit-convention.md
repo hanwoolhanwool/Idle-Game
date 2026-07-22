@@ -23,16 +23,16 @@ Unity 프로젝트 특성에 맞춰 일부 규칙을 확장한다.
 
 | type       | 의미                              | 예시                                              |
 | ---------- | --------------------------------- | ------------------------------------------------- |
-| `feat`     | 기능 추가                          | `feat(combat): add critical hit system`           |
-| `fix`      | 버그 수정                          | `fix(camera): prevent clipping through walls`     |
-| `refactor` | 동작 변화 없는 구조 개선            | `refactor(player): split movement controller`     |
-| `perf`     | 성능 개선                          | `perf(rendering): reduce draw calls in lobby`     |
-| `chore`    | 빌드·설정·패키지·기타 작업          | `chore(packages): update addressables`            |
-| `docs`     | 문서 수정                          | `docs(readme): add build instructions`            |
-| `test`     | 테스트 추가/수정                   | `test(inventory): add item stacking tests`        |
-| `style`    | 포맷팅·네이밍 등 로직 변화 없음     | `style(ui): rename HUD prefab labels`             |
-| `build`    | 빌드 시스템 관련                   | `build(android): update keystore config`          |
-| `ci`       | CI/CD 관련                        | `ci: add Unity test runner workflow`              |
+| `feat`     | 기능 추가                          | `feat(combat): 치명타 시스템 추가`                 |
+| `fix`      | 버그 수정                          | `fix(camera): 벽 뚫림 현상 수정`                   |
+| `refactor` | 동작 변화 없는 구조 개선            | `refactor(player): 이동 컨트롤러 분리`             |
+| `perf`     | 성능 개선                          | `perf(rendering): 로비 드로우콜 감소`              |
+| `chore`    | 빌드·설정·패키지·기타 작업          | `chore(packages): addressables 업데이트`          |
+| `docs`     | 문서 수정                          | `docs(readme): 빌드 방법 추가`                    |
+| `test`     | 테스트 추가/수정                   | `test(inventory): 아이템 중첩 테스트 추가`         |
+| `style`    | 포맷팅·네이밍 등 로직 변화 없음     | `style(ui): HUD 프리팹 라벨명 정리`               |
+| `build`    | 빌드 시스템 관련                   | `build(android): 키스토어 설정 갱신`              |
+| `ci`       | CI/CD 관련                        | `ci: Unity 테스트 러너 워크플로 추가`             |
 
 ## 3. Scope
 
@@ -64,7 +64,7 @@ packages
 
 동작·API 가 하위 호환을 깨면 다음 중 하나로 표기한다.
 
-- 제목의 type 뒤에 `!`: `refactor(input)!: rename IJoystickInputReader to IMoveInputSource`
+- 제목의 type 뒤에 `!`: `refactor(input)!: IJoystickInputReader 를 IMoveInputSource 로 변경`
 - 또는 footer: `BREAKING CHANGE: <설명>`
 
 ## 6. 커밋 템플릿 사용

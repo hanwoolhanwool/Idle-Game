@@ -57,8 +57,9 @@
 | `_inputRouter` | `PlayerInputRouter` | `ComposeInputRouter` | [[input]] |
 | `_deathHandler` | `PlayerDeathHandler` | `ComposeSkills` | [[combat]] |
 | `_hitReaction` | `PlayerHitReaction` | `ComposeSkills` | [[combat]] |
+| `_expRewardHandler` | `EnemyExpRewardHandler` | `ComposeCore` | [kill-exp-reward](../enemy/kill-exp-reward.md) |
 
-외부 참조(직렬화 주입): `PlayerStateMachineDriver`, 이동 컨트롤러(`movementBehaviour`), `SkillLoadoutConfig`, `AutoBattleInputSource`, `SkillButton[]`, 능동 입력 소스, `PlayerHudBinder`, 각종 SO(`PlayerProgressionConfig`·`EquipmentDefinition[]`·`BuffDefinition[]`).
+외부 참조(직렬화 주입): `PlayerStateMachineDriver`, 이동 컨트롤러(`movementBehaviour`), `SkillLoadoutConfig`, `AutoBattleInputSource`, `SkillButton[]`, 능동 입력 소스, `PlayerHudBinder`, 각종 SO(`PlayerProgressionConfig`·**`PlayerLevelTable`(필수 — null이면 `ComposeCore`가 조립을 중단한다)**·`EquipmentDefinition[]`·`BuffDefinition[]`).
 
 ## 4. 시스템 맵
 
@@ -128,7 +129,7 @@ flowchart TB
 
 ## 5. 데이터 구조
 
-`PlayerRoot` 자체는 데이터를 소유하지 않고 SO 참조를 배선만 한다: `PlayerProgressionConfig`([[progression]]), `EquipmentDefinition[]`([[equipment]]), `BuffDefinition[]`([[buffs]]), `SkillLoadoutConfig`([[skills]]), `PlayerStat`([[movement]]).
+`PlayerRoot` 자체는 데이터를 소유하지 않고 SO 참조를 배선만 한다: `PlayerProgressionConfig`·`PlayerLevelTable`([[progression]]), `EquipmentDefinition[]`([[equipment]]), `BuffDefinition[]`([[buffs]]), `SkillLoadoutConfig`([[skills]]), `PlayerStat`([[movement]]).
 
 ## 6. 상세 로직 — 생명주기
 
@@ -137,7 +138,7 @@ flowchart TB
 ```mermaid
 flowchart TD
     S["Start"] --> C["Compose()"]
-    C --> C1["ComposeCore: stat·orchestrator·progression·equipment·buff·combat 생성"]
+    C --> C1["ComposeCore: levelTable 필수 검증 →<br/>stat·orchestrator·progression·equipment·buff·combat·expReward 브리지 생성"]
     C --> C2["ComposeSkills: 이동에 스탯 주입 → 라우터 → 로드아웃/쿨다운/게이트 → skillController"]
     C2 --> C3["autoCast·skillButton 배선 · deathHandler·hitReaction 구독"]
     S --> I["Initialize()"]
@@ -163,7 +164,7 @@ stat → buff → skill → autoCast
 
 ### 6.3 정리 (`OnDestroy`)
 
-`deathHandler`·`hitReaction`을 `Dispose`(이벤트 구독 해제)하고 `PlayerRegistry.Unregister` 호출 — 이벤트·전역 참조 누수 방지([[combat]]).
+`deathHandler`·`hitReaction`·`expRewardHandler`를 `Dispose`(이벤트 구독 해제)하고 `PlayerRegistry.Unregister` 호출 — 이벤트·전역 참조 누수 방지([[combat]], [kill-exp-reward](../enemy/kill-exp-reward.md)).
 
 ### 6.4 제어 모드 전환
 

@@ -182,7 +182,7 @@ sequenceDiagram
 
 > **해소(2026-07-21)** — 종전 TBD였던 "샘플 리졸버가 레벨 미반영"·"경험치 공식 하드코딩"은 `PlayerLevelTable` 신설과 리졸버 구현으로 해소되었다(§1 갱신 참조). 구현 전 진단은 `docs/reports/base-stat-resolver-level-scaling.md`에 기록으로 남아 있다.
 
-- **미사용 모델 `PlayerProgressionData`**: `Level`·`BaseHp` 등을 가진 별도 클래스가 있으나 컨트롤러는 `PlayerProgressionState`만 사용. 필드명 오타(`AttakPower`·`Defence`)도 존재 → 정리/삭제 대상(`docs/reports/unused-duplicate-models-cleanup.md`).
+- ~~**미사용 모델 `PlayerProgressionData`**~~ **해소(2026-07-21, 커밋 58906bd)**: 미사용·오타(`AttakPower`·`Defence`) 클래스로 확인되어 **삭제 완료**. `docs/reports/unused-duplicate-models-cleanup.md`의 제안 중 이 항목만 선행 이행됐고, `TimedBuffData` 등 나머지 정리 대상은 아직 코드에 남아 있다.
 - **`PromotionTier` 미사용**: 승급 상태가 있으나 산출에 반영되지 않음. 전직 시스템(M2)에서 `PlayerBaseStatResolver.Resolve`에 차수별 보정을 합산할 예정(리졸버 주석에 명시, 호출부 불변 — OCP).
 - **세이브 부재**: 레벨·경험치가 재기동 시 초기화된다. M0 ④(세이브/로드, `docs/design/player-data-management-plan.md` 1단계)에서 해소 예정.
 

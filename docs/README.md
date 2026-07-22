@@ -30,10 +30,12 @@
 
 | 문서 | 내용 |
 |------|------|
+| [m0-close-the-loop-plan.md](./design/m0-close-the-loop-plan.md) | **M0 "루프 닫기" 계획서** — 코어 루프의 끊긴 지점(스포너·세이브 등)을 잇는 마일스톤 정본. 다른 계획서들이 이 문서를 상호 참조 |
 | [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
 | [enemy-kill-exp-reward-plan.md](./design/enemy-kill-exp-reward-plan.md) | 적 처치 경험치 보상 구현 계획서(→ as-built: [specs/enemy/kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) |
 | [player-data-management-plan.md](./design/player-data-management-plan.md) | 플레이어 데이터 관리 체계 구현 계획서 — 소유 데이터(레벨·아이템·장비·위치) 계층 신설 + 세이브/로드 |
 | [player-root-refactoring-proposal.md](./design/player-root-refactoring-proposal.md) | PlayerRoot 리팩터링 제안 |
+| [skill-menu-plan.md](./design/skill-menu-plan.md) | 스킬 창(스킬 인벤토리·습득·장착 UI) 구현 계획서 — M2 대상, 착수 보류 |
 
 **분석·기록** — [`reports/`](./reports) (진단·리팩터링 제안·작업 로그)
 
@@ -120,7 +122,7 @@ flowchart TB
     subgraph SM["상태 머신"]
         Driver[PlayerStateMachineDriver]
         Machine[PlayerStateMachine]
-        States[Idle / Move / Attack<br/>Hit / Dead]
+        States[Idle / Move / Casting<br/>Hit / Dead]
         Driver --> Machine --> States
     end
 
