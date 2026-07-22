@@ -265,7 +265,7 @@ flowchart LR
 | [player-data-management-plan.md](../design/player-data-management-plan.md) | **M0** (세이브·재화) + **M1** (인벤토리·아이템) | 문서를 쪼개지 않고, 구현을 2단계로 나눠 진행 |
 | [skill-menu-plan.md](../design/skill-menu-plan.md) | **M2** | 스스로 지목한 선행 과제(전직 시스템)를 M2 앞부분에서 해소 |
 | [enemy-kill-exp-reward-plan.md](../design/enemy-kill-exp-reward-plan.md) | 완료 | `EnemyKillReward` 허브를 M0에서 **골드 보상까지** 확장 |
-| [server-application-plan.md](../design/server-application-plan.md) | **별도 기술 트랙** (§8) | 마일스톤 밖에서 병행 — 계정+서버 세이브는 M1 언저리, presence+채팅은 스파이크 후, PvP 시뮬은 PvP 착수 시 |
+| [server-application-plan.md](../design/server-application-plan.md) | **별도 기술 트랙** (§8) | 마일스톤 밖에서 병행 — 계정+서버 세이브는 M1 언저리, presence+채팅은 스파이크 후, 파티 보스전·실시간 PvP는 코어 완비 후(계획서 §12 도입 로드맵) |
 
 ## 8. 리스크 · 미결정 (TBD)
 
@@ -277,7 +277,7 @@ flowchart LR
 | **`GoldGainRate`의 의미** | 이미 정의된 스탯이 골드 없이 존재. M0에서 실제 배율로 연결할지, 미사용으로 남길지 | M0 착수 시 |
 | **스탯 20종 과잉** | 절반 이상이 미사용. 전부 살릴지, 일부를 잘라낼지 | M4 |
 | **존재 공유(presence)·채팅 스파이크 시기** | §3.5에서 방향 확정(채팅 채널 포함, 07-22). 코어 루프 검증(M0~M1)은 로컬로 가능하므로 **별도 기술 트랙**으로 진행 — 기술 스택 선정·위치 동기화·채팅 스파이크를 언제 시작할지만 미정 | M1 종료 전 |
-| **서버 기술 스택** | 서버 적용 방향은 확정([server-application-plan.md](../design/server-application-plan.md) — 계정·권위 저장·presence+채팅·PvP 시뮬의 4층). 남은 것은 백엔드 스택 선정(Nakama 1순위 검토)과 계정+서버 세이브 도입 시점(M1 언저리 권장) | presence 스파이크 시 |
+| **서버 기술 스택** | 서버 적용 방향은 확정([server-application-plan.md](../design/server-application-plan.md) — 계정·권위 저장·presence+채팅·실시간 매치 룸(파티 보스전·PvP)의 4층). 남은 것은 백엔드 스택 선정(Nakama 1순위 검토)과 계정+서버 세이브 도입 시점(M1 언저리 권장) | presence 스파이크 시 |
 
 **해소 완료** (2026-07-13, §3.5): 성장 스케일(유한형·float) · 프레스티지(미도입) · 오프라인 보상 방식(공식 근사) · 씬 구조(단일 씬 + 데이터 교체).
 **해소 완료** (2026-07-21, §3·§3.5): **북극성 = A안(빌드 완성)** — B는 척도, C는 절정. 모험·교류는 A의 여정 차별점으로 대등 유지.
