@@ -8,7 +8,7 @@
 
 ## 0. 이 문서의 출발점
 
-이 프로젝트에는 **"어떻게 만드나(How)"** 문서가 12편 있지만, **"무엇을 왜 만드나(What·Why)"** 문서가 한 편도 없다.
+이 프로젝트에는 **"어떻게 만드나(How)"** 문서가 여러 편 있지만, **"무엇을 왜 만드나(What·Why)"** 문서가 한 편도 없다.
 
 증거는 문서 자신이 남겨 뒀다. `player-data-management-plan.md`와 `skill-menu-plan.md`의 머리말은 둘 다 **`관련 기획서: (링크 예정)`** 으로 빈칸을 비워 뒀고, `conventions/spec-writing.md` §0은 *"게임 재미·밸런싱 의도 등 무엇을·왜는 기획서(GDD)에 두고 링크만 건다"* 고 규정하지만 **그 GDD가 존재하지 않는다.**
 
@@ -291,6 +291,6 @@ flowchart LR
 1. ✅ **북극성 확정** — A안(빌드 완성)으로 확정(§3·§3.1).
 2. ✅ **M0 설계 명세(TDD) 작성** — [m0-close-the-loop-plan.md](../design/m0-close-the-loop-plan.md)(스포너·골드 재화·세이브).
 3. ✅ **문서 위계 등록** — `conventions/spec-writing.md` §1에 "기획 문서(GDD)" 행 추가, `docs/README.md` 허브에 `gdd/` 섹션 등록.
-4. ✅ **`관련 기획서` 링크 채움** — 계획서 2건뿐 아니라 `enemy-kill-exp-reward-plan.md`와 `specs/player/` 명세 8건의 `(링크 예정)` 머리말까지 GDD 링크로 교체 완료.
+4. ✅ **`관련 기획서` 링크 채움** — 계획서 2건뿐 아니라 `enemy-kill-exp-reward-plan.md`와 `specs/player/` 명세 10건의 머리말 `(링크 예정 — [[game-genre-hybrid-idle-combat]])` 플레이스홀더까지 실제 GDD 링크로 전부 교체 완료.
 
 다음은 문서가 아니라 **구현** 트랙이다: M0 착수(§5.2, 순서 ~~①레벨→스탯 리졸버~~(완료) → ②스포너 → ③골드 → ④세이브).

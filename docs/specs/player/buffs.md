@@ -153,7 +153,7 @@ flowchart TD
 ## 11. 리스크·미결정(TBD)
 
 - **미사용 모델 `TimedBuffData`**: `BuffRuntimeInstance`와 역할이 겹치는 별도 클래스가 존재하나 미사용 → 정리 대상.
-- **`StatModifierFactory` 미사용**: 연산별 생성 도우미가 있으나 현재 경로는 `Orchestrator`가 `RuntimeModifierEntry`를 직접 변환. 중복 → 통합/제거 검토.
+- **`StatModifierFactory` 프로덕션 경로 미사용**: 연산별 생성 도우미가 있으나 실제 조립 경로는 `Orchestrator`가 `RuntimeModifierEntry`를 직접 변환한다(프로토타입 예제 `ExampleEquipment`에만 잔존). 중복 → 통합/제거 검토.
 - **스택 미지원**: 동일 버프 중첩(예: 3스택)이 불가. 스택형 버프가 필요하면 인스턴스 목록/카운트 모델 필요.
 - **디버프 구분 부재**: 디버프도 동일 파이프라인. 해제 저항·디스펠 정책이 생기면 분기 필요([[stats]] `ModifierLayer.Debuff`는 이미 존재).
 

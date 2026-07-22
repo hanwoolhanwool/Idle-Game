@@ -130,7 +130,7 @@ flowchart TD
 ## 11. 리스크·미결정(TBD)
 
 - **장비 부위(슬롯) 없음**: `EquipmentRuntimeData` 주석에 "장비 부위를 구분할 머신 필요"라고 명시. 현재는 `ItemId` 중복만 막을 뿐, "무기 슬롯 1개" 같은 부위 제약이 없다 → 슬롯 시스템 필요.
-- **`EquipmentFactory`·`EquipmentRuntimeData` 미사용**: `Orchestrator`가 `RuntimeModifierEntry`를 직접 변환하므로 이 팩토리/런타임 데이터는 현재 호출 경로에 없다. 중복 로직 → 통합 또는 제거 대상.
+- **`EquipmentFactory`·`EquipmentRuntimeData` 프로덕션 경로 미사용**: `Orchestrator`가 `RuntimeModifierEntry`를 직접 변환하므로 이 팩토리/런타임 데이터는 실제 조립 경로에 없다(프로토타입 예제 `ExampleEquipment`에만 잔존). 중복 로직 → 통합 또는 제거 대상.
 - **강화/등급 미반영**: 장비 강화·랜덤 옵션이 데이터 모델에 없음.
 
 ## 12. 확장 여지

@@ -17,7 +17,7 @@
 | 구분 | 내용 |
 |------|------|
 | **포함** | 처치 보상 이벤트 허브(`EnemyKillReward`), 경험치 수신 계약(`IExpReceiver`), 브리지 어댑터(`EnemyExpRewardHandler`), `EnemyUnit`의 `expReward` 필드와 `Die()` 발행, `PlayerProgressionController`의 `IExpReceiver` 구현, `PlayerRoot`의 브리지 생성·Dispose 배선 |
-| **미포함(Out of scope)** | 경험치 **획득량 밸런싱**(적별 수치는 데이터 조정 영역), `EnemyStat` SO 통합(현재 `EnemyUnit`이 미사용 — §12), 경험치 획득 배율(`ExpGainRate` 연동), 세이브/로드, **레벨→스탯 리졸버**([[progression]] §11·§12) — 경험치가 들어와도 스탯이 오르게 하는 별도 과제 |
+| **미포함(Out of scope)** | 경험치 **획득량 밸런싱**(적별 수치는 데이터 조정 영역), `EnemyStat` SO 통합(현재 `EnemyUnit`이 미사용 — §12), 경험치 획득 배율(`ExpGainRate` 연동), 세이브/로드. (**레벨→스탯 리졸버**는 이 배선의 하류 과제였고 **구현 완료** — 경험치→레벨업→베이스 스탯 실증가가 성립한다. [[progression]] §6.2 참조) |
 
 ## 3. 요구사항·설계 목표
 
