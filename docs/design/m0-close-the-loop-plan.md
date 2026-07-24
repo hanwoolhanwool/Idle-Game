@@ -1,7 +1,7 @@
 # M0 — 루프 닫기(Close the Loop) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯) **구현 완료**, 결함 2(스포너)·3(세이브) 미착수
-> **최종 갱신**: 2026-07-22 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
+> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯)·2(스포너·풀) **구현 완료**, 결함 3(세이브) 미착수
+> **최종 갱신**: 2026-07-24 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [stats.md](../specs/player/stats.md) · [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)
 > **관련 계획서**: [player-data-management-plan.md](./player-data-management-plan.md) (세이브·재화의 정본 — 이 문서는 그중 M0 범위만 구현한다)
 
@@ -14,12 +14,12 @@
 | # | 끊긴 지점 | 코드 근거 |
 |---|-----------|-----------|
 | 1 | ~~**레벨업해도 강해지지 않는다**~~ **해소(2026-07-21, 커밋 58906bd)** | 당시 `Resolve(progressionState, config)`가 `progressionState`를 받고도 쓰지 않았다. 현재는 `Resolve(state)`가 `PlayerLevelTable.ResolveStats(state.Level)`로 레벨을 실제 반영한다([base-stat-resolver-level-scaling.md](../reports/base-stat-resolver-level-scaling.md)) |
-| 2 | **적이 다시 나오지 않는다** | `EnemyUnit.Die()`가 `SetActive(false)`로 끝난다. 적을 재공급하는 주체가 코드 어디에도 없다 |
+| 2 | ~~**적이 다시 나오지 않는다**~~ **해소(2026-07-24)** | 당시 `EnemyUnit.Die()`가 `SetActive(false)`로 끝나 재공급 주체가 없었다. 현재는 `EnemySpawner`(지속 스폰+초기 채움)가 `EnemyPool`에서 적을 재사용하고, `EnemyUnit.Despawned` 이벤트로 죽은 적을 풀에 반납한다 |
 | 3 | **성장이 휘발된다** | 저장·로드가 전무하다. `GameManager`는 `Start()`/`Update()`가 빈 스텁이다 |
 
 M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을 목표로 한다. 재미·밸런싱·콘텐츠 물량은 M1 이후다.
 
-> **진행 현황(2026-07-22)**: 결함 1은 구현 완료 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제까지 §5.1·§7·§8의 해당 설계가 모두 코드에 반영됐다. **남은 범위는 결함 2(스포너·스테이지)와 결함 3(골드·세이브·`GameManager`)이다.**
+> **진행 현황(2026-07-24)**: 결함 1·2 구현 완료. 결함 1 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제(§5.1·§7·§8). 결함 2 — `StageDefinition`(SO)·`EnemyPool`(순수 C# Stack 풀)·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned` 이벤트 신설, 씬 배선 완료(`Enemy.prefab`·`Stage_01.asset`). 스포너는 **지속 스폰(정원 유지) + 진입 시 초기 일괄 채움 + `HasPlayer` 게이트(폴백 제거)** 로 구현했다(§6.1 flowchart 대비 초기 채움·게이트는 as-built 추가). **`StageDefinition.GoldReward` 필드는 소비처(`PlayerWallet`)가 없어 결함 3의 골드 축과 함께 도입하도록 미뤘다** — 그 외 §5.2 필드는 전부 구현됐다. **남은 범위는 결함 3(골드·세이브·`GameManager`)이다.**
 
 ## 1. 개요·목적
 
@@ -184,7 +184,8 @@ classDiagram
 | `ConcurrentEnemies` | **동시 생존 목표 수** | 5 |
 | `SpawnInterval` | 스폰 간격(초) | 1.0 |
 | `SpawnRadius` | 스폰 원 반경 | 8 |
-| `ExpReward` / `GoldReward` | 처치 보상 | 10 / 5 |
+| `ExpReward` | 처치 보상 경험치 | 10 |
+| ~~`GoldReward`~~ | 처치 보상 골드 — **소비처(`PlayerWallet`) 부재로 골드 단계까지 도입 보류** | 5 (예정) |
 
 ## 6. 상세 로직
 
@@ -348,6 +349,6 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 ## 14. 착수 순서
 
 1. ~~**레벨 테이블 + 리졸버**~~ **완료(2026-07-21)** — 가장 작고 독립적. 다른 시스템을 건드리지 않고 §0의 결함 1을 닫았다.
-2. **스포너 + 풀** — 결함 2를 닫는다. 1의 효과를 관찰할 무대가 된다.
+2. ~~**스포너 + 풀**~~ **완료(2026-07-24)** — 결함 2를 닫았다. `StageDefinition`·`EnemyPool`·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned`. 1의 효과를 관찰할 무대가 됐다.
 3. **골드 + 보상 페이로드** — 재화 축 신설.
 4. **세이브 + `GameManager`** — 결함 3을 닫는다. 앞의 셋이 다 있어야 저장할 것이 생긴다.
