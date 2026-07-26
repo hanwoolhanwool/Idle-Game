@@ -9,16 +9,16 @@ using UnityEngine;
 /// </summary>
 public static class EnemyKillReward
 {
-    /// <summary>처치 보상이 발행될 때마다 획득 경험치를 전달한다. 허브는 상태를 갖지 않아 발행마다 독립적으로 누적된다.</summary>
-    public static event Action<int> Rewarded;
+    /// <summary>처치 보상이 발행될 때마다 보상 페이로드를 전달한다. 허브는 상태를 갖지 않아 발행마다 독립적으로 누적된다.</summary>
+    public static event Action<KillRewardPayload> Rewarded;
 
-    /// <summary>처치 보상을 발행한다. <paramref name="exp"/>가 0 이하이면 무시한다(오지급 방어).</summary>
-    public static void Publish(int exp)
+    /// <summary>처치 보상을 발행한다. 경험치·골드가 모두 0 이하이면 무시한다(오지급 방어).</summary>
+    public static void Publish(in KillRewardPayload payload)
     {
-        if (exp <= 0)
+        if (payload.Exp <= 0 && payload.Gold <= 0)
             return;
 
-        Rewarded?.Invoke(exp);
+        Rewarded?.Invoke(payload);
     }
 
     /// <summary>

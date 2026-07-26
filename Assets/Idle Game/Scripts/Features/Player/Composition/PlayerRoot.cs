@@ -44,6 +44,8 @@ public sealed class PlayerRoot : MonoBehaviour
     private PlayerDeathHandler _deathHandler;
     private PlayerHitReaction _hitReaction;
     private EnemyExpRewardHandler _expRewardHandler;
+    private PlayerWallet _wallet;
+    private EnemyGoldRewardHandler _goldRewardHandler;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -68,6 +70,7 @@ public sealed class PlayerRoot : MonoBehaviour
         _deathHandler?.Dispose();
         _hitReaction?.Dispose();
         _expRewardHandler?.Dispose();
+        _goldRewardHandler?.Dispose();
 
         if (_combatController != null)
             PlayerRegistry.Unregister(_combatController);
@@ -104,6 +107,10 @@ public sealed class PlayerRoot : MonoBehaviour
 
         // 적 처치 보상 → 경험치 배선. 적↔성장의 유일한 결합점(브리지)을 여기서만 안다.
         _expRewardHandler = new EnemyExpRewardHandler(_progressionController);
+
+        // 적 처치 보상 → 골드 배선. 지갑을 소유하고 브리지로 허브에 연결한다(경험치와 대칭).
+        _wallet = new PlayerWallet();
+        _goldRewardHandler = new EnemyGoldRewardHandler(_wallet);
         return true;
     }
 

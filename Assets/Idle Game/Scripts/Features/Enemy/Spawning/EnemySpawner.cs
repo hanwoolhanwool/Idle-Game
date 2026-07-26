@@ -62,7 +62,7 @@ public sealed class EnemySpawner : MonoBehaviour
     private void Spawn()
     {
         EnemyUnit enemy = _pool.Rent();
-        enemy.Configure(stage.EnemyStat, stage.ExpReward);
+        enemy.Configure(stage.EnemyStat, stage.ExpReward, stage.GoldReward);
         enemy.transform.position = RandomSpawnPosition();
         enemy.Despawned += OnEnemyDespawned;
         enemy.gameObject.SetActive(true);

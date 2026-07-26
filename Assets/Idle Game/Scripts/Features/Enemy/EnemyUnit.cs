@@ -6,6 +6,7 @@ public sealed class EnemyUnit : MonoBehaviour, IDamageable
 {
     [SerializeField] private float maxHp = 100f;
     [SerializeField] private int expReward = 10;
+    [SerializeField] private int goldReward = 5;
 
     private float _currentHp;
 
@@ -22,10 +23,11 @@ public sealed class EnemyUnit : MonoBehaviour, IDamageable
     /// 풀에서 재사용되는 인스턴스는 <see cref="Awake"/>가 다시 호출되지 않으므로,
     /// 매 스폰마다 이 메서드가 스탯·보상을 다시 주입하고 체력을 가득 채우는 유일한 리셋 지점이다.
     /// </summary>
-    public void Configure(EnemyStat stat, int expReward)
+    public void Configure(EnemyStat stat, int expReward, int goldReward)
     {
         maxHp = stat.maxHp;
         this.expReward = expReward;
+        this.goldReward = goldReward;
         _currentHp = maxHp;
     }
 
@@ -50,7 +52,7 @@ public sealed class EnemyUnit : MonoBehaviour, IDamageable
 
         // "실제 사망" 경로에서만 보상을 발행한다. SetActive(false) 전에 발행해
         // OnDisable(풀링 despawn·씬 언로드)과 분리한다(오지급 방지).
-        EnemyKillReward.Publish(expReward);
+        EnemyKillReward.Publish(new KillRewardPayload(expReward, goldReward));
 
         // 사라짐을 방송한다. 스포너가 이를 듣고 풀에 반납한다(SetActive(false) 전에 알린다).
         Despawned?.Invoke(this);

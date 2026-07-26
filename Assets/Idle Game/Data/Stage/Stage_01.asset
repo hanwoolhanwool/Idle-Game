@@ -18,3 +18,4 @@ MonoBehaviour:
   SpawnInterval: 1
   SpawnRadius: 8
   ExpReward: 10
+  GoldReward: 5

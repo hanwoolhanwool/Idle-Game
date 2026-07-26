@@ -15,9 +15,9 @@ public sealed class EnemyExpRewardHandler : IDisposable
         EnemyKillReward.Rewarded += HandleRewarded;
     }
 
-    private void HandleRewarded(int exp)
+    private void HandleRewarded(KillRewardPayload payload)
     {
-        _receiver.AddExp(exp);
+        _receiver.AddExp(payload.Exp);
     }
 
     public void Dispose()

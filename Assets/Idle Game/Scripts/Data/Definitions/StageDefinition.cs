@@ -32,4 +32,8 @@ public sealed class StageDefinition : ScriptableObject
     [Min(0)]
     [Tooltip("적 한 마리 처치 시 지급할 경험치.")]
     public int ExpReward = 10;
+
+    [Min(0)]
+    [Tooltip("적 한 마리 처치 시 지급할 골드.")]
+    public int GoldReward = 5;
 }
