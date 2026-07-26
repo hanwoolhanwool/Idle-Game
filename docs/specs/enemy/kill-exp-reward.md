@@ -1,7 +1,9 @@
 # 적 처치 경험치 보상 (Kill Exp Reward)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-22 · **관련 기획서**: 해당 없음
+> **최종 갱신**: 2026-07-26 · **관련 기획서**: 해당 없음
+>
+> **2026-07-26 계약 변경**: 허브가 `Publish(int exp)` → **`Publish(in KillRewardPayload)`** 로 전환됐고, 이벤트는 `Action<int>` → **`Action<KillRewardPayload>`** 다. 골드가 같은 허브를 타면서 보상 종류가 늘어도 발행 시그니처가 안 바뀌도록 페이로드로 감쌌다(OCP). 현행 계약은 §6.3·§7에 반영했다. 다만 이 문서는 **경험치 배선의 as-built**이므로 §4·§5의 다이어그램은 경험치 경로만 그린다(골드 브리지는 같은 허브에 대칭으로 붙는다). 골드 축 전체는 [m0-close-the-loop-plan.md](../../design/m0-close-the-loop-plan.md) §0 참조.
 > **관련 명세**: [progression.md](../player/progression.md) · [combat.md](../player/combat.md) · **설계 근거**: [enemy-kill-exp-reward-plan.md](../../design/enemy-kill-exp-reward-plan.md)
 
 ---
@@ -128,16 +130,17 @@ flowchart TD
 
 ### 6.3 허브 발행·구독 (`EnemyKillReward`)
 
-- `Publish(int exp)`: `exp <= 0`이면 무시(가드), 아니면 `Rewarded?.Invoke(exp)`.
-- `Rewarded`는 `Action<int>` 정적 이벤트. 브리지가 구독/해제한다.
+- `Publish(in KillRewardPayload payload)`: `Exp`·`Gold`가 **모두** 0 이하면 무시(가드), 아니면 `Rewarded?.Invoke(payload)`. 하나라도 지급할 값이 있으면 발행한다.
+- `Rewarded`는 `Action<KillRewardPayload>` 정적 이벤트. 브리지들이 구독/해제한다.
 - 허브는 **상태를 갖지 않는다.** 다중 처치는 발행마다 독립적으로 전달돼 수신 측에서 누적된다.
+- 구독자는 **둘 이상**이며 각자 자기 필드만 읽는다 — `EnemyExpRewardHandler`는 `payload.Exp`, `EnemyGoldRewardHandler`는 `payload.Gold`(ISP).
 
 ### 6.4 브리지 수명 (`EnemyExpRewardHandler`)
 
 ```mermaid
 stateDiagram-v2
     [*] --> Subscribed: ctor(IExpReceiver) → Rewarded += HandleRewarded
-    Subscribed --> Subscribed: Rewarded(exp) → receiver.AddExp(exp)
+    Subscribed --> Subscribed: Rewarded(payload) → receiver.AddExp(payload.Exp)
     Subscribed --> [*]: Dispose() → Rewarded -= HandleRewarded
 ```
 
@@ -149,8 +152,9 @@ stateDiagram-v2
 | 계약 | 방향 | 설명 |
 |------|------|------|
 | `IExpReceiver.AddExp(int)` | 브리지가 **호출** | 경험치 수신 진입점. `PlayerProgressionController`가 구현(기존 `AddExp` 재사용, 0 이하 자체 무시) |
-| `EnemyKillReward.Publish(int)` | `EnemyUnit`이 **호출** | 처치 보상 발행. 수신 측을 모름 |
-| `EnemyKillReward.Rewarded` | 브리지가 **구독** | 보상 이벤트. `EnemyExpRewardHandler`가 `AddExp`로 포워딩 |
+| `EnemyKillReward.Publish(in KillRewardPayload)` | `EnemyUnit`이 **호출** | 처치 보상 발행(경험치·골드를 한 페이로드로). 수신 측을 모름 |
+| `EnemyKillReward.Rewarded` | 브리지들이 **구독** | `Action<KillRewardPayload>`. `EnemyExpRewardHandler`→`AddExp(payload.Exp)`, `EnemyGoldRewardHandler`→`AddGold(payload.Gold)` |
+| `IGoldReceiver.AddGold(long)` | 골드 브리지가 **호출** | 골드 수신 진입점. `PlayerWallet`이 구현(잔액 `long`) |
 | `EnemyExpRewardHandler(IExpReceiver)` | `PlayerRoot`가 **생성·Dispose** | 브리지 수명 관리([[combat]]의 `PlayerDeathHandler`와 동일 패턴) |
 
 > **경계 원칙**: 적↔성장 직접 참조 금지. 모든 전달은 허브+브리지를 통과한다. 이는 [[combat]]이 `IDamageable` 뒤로 피격 소스를 숨긴 것과 같은 결이다.
@@ -175,7 +179,7 @@ stateDiagram-v2
 - **정적 허브 도메인 리로드 리셋**: `EnemyKillReward`는 `static event`라 "Enter Play Mode Options"(도메인 리로드 비활성) 시 이전 세션 구독자가 잔류할 수 있다. `[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`의 `ResetStatics()`가 `Rewarded`를 `null`로 초기화한다([[combat]]의 정적 상태 잔류 주의와 동일 결).
 - **발행 시점 계약**: `Die()` 안, `SetActive(false)` **전** 발행(§6.2). 순서가 뒤바뀌면 비활성화 부작용과 얽힐 수 있다.
 - **순수 C# 브리지**: `EnemyExpRewardHandler`는 MonoBehaviour가 아님 → `PlayerRoot.ComposeCore`에서 생성, `OnDestroy`에서 Dispose(기존 `_deathHandler`·`_hitReaction`과 동일 수명).
-- **성능 예산**: 처치 시에만 이벤트 1회 발행. 매 프레임 비용 0, 프레임당 GC Alloc 없음(`Action<int>` 값 전달).
+- **성능 예산**: 처치 시에만 이벤트 1회 발행. 매 프레임 비용 0. `KillRewardPayload`는 `readonly struct`(값 타입)라 발행 경로에 힙 할당이 없다.
 
 ## 10. 검증 관점
 

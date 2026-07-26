@@ -1,7 +1,7 @@
 # M0 — 루프 닫기(Close the Loop) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯)·2(스포너·풀) **구현 완료**, 결함 3(세이브) 미착수
-> **최종 갱신**: 2026-07-24 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
+> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯)·2(스포너·풀) **구현 완료**, 결함 3은 **골드 축 완료·세이브 미착수**
+> **최종 갱신**: 2026-07-26 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [stats.md](../specs/player/stats.md) · [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)
 > **관련 계획서**: [player-data-management-plan.md](./player-data-management-plan.md) (세이브·재화의 정본 — 이 문서는 그중 M0 범위만 구현한다)
 
@@ -19,7 +19,9 @@
 
 M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을 목표로 한다. 재미·밸런싱·콘텐츠 물량은 M1 이후다.
 
-> **진행 현황(2026-07-24)**: 결함 1·2 구현 완료. 결함 1 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제(§5.1·§7·§8). 결함 2 — `StageDefinition`(SO)·`EnemyPool`(순수 C# Stack 풀)·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned` 이벤트 신설, 씬 배선 완료(`Enemy.prefab`·`Stage_01.asset`). 스포너는 **지속 스폰(정원 유지) + 진입 시 초기 일괄 채움 + `HasPlayer` 게이트(폴백 제거)** 로 구현했다(§6.1 flowchart 대비 초기 채움·게이트는 as-built 추가). **`StageDefinition.GoldReward` 필드는 소비처(`PlayerWallet`)가 없어 결함 3의 골드 축과 함께 도입하도록 미뤘다** — 그 외 §5.2 필드는 전부 구현됐다. **남은 범위는 결함 3(골드·세이브·`GameManager`)이다.**
+> **진행 현황(2026-07-24)**: 결함 1·2 구현 완료. 결함 1 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제(§5.1·§7·§8). 결함 2 — `StageDefinition`(SO)·`EnemyPool`(순수 C# Stack 풀)·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned` 이벤트 신설, 씬 배선 완료(`Enemy.prefab`·`Stage_01.asset`). 스포너는 **지속 스폰(정원 유지) + 진입 시 초기 일괄 채움 + `HasPlayer` 게이트(폴백 제거)** 로 구현했다(§6.1 flowchart 대비 초기 채움·게이트는 as-built 추가). §5.2 필드는 전부 구현됐다.
+
+> **골드 축 완료(2026-07-26)**: 결함 3의 재화 축을 먼저 닫았다. `KillRewardPayload`(readonly struct) 신설로 `EnemyKillReward.Publish`가 페이로드 발행으로 전환됐고(§6.2·§7의 계약 변경 반영), `IGoldReceiver`·`PlayerWallet`(순수 C#, 잔액 `long`, 원자적 `TrySpend`)·`EnemyGoldRewardHandler`(경험치 브리지와 대칭)가 신설됐다. `StageDefinition.GoldReward`도 이때 도입해 `EnemyUnit.Configure(stat, exp, gold)`로 주입한다. `PlayerRoot`가 지갑·브리지를 조립하고 `OnDestroy`에서 `Dispose`한다. 런타임 검증: 3마리 처치 시 `Gold=15`·`Exp=30`(같은 페이로드에서 두 브리지가 각자 필드만 소비 — ISP 실증). **남은 범위는 세이브/로드·`GameManager`·`NumberFormatter`다.**
 
 ## 1. 개요·목적
 
@@ -185,7 +187,7 @@ classDiagram
 | `SpawnInterval` | 스폰 간격(초) | 1.0 |
 | `SpawnRadius` | 스폰 원 반경 | 8 |
 | `ExpReward` | 처치 보상 경험치 | 10 |
-| ~~`GoldReward`~~ | 처치 보상 골드 — **소비처(`PlayerWallet`) 부재로 골드 단계까지 도입 보류** | 5 (예정) |
+| `GoldReward` | 처치 보상 골드 (2026-07-26 도입) | 5 |
 
 ## 6. 상세 로직
 
@@ -350,5 +352,5 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 
 1. ~~**레벨 테이블 + 리졸버**~~ **완료(2026-07-21)** — 가장 작고 독립적. 다른 시스템을 건드리지 않고 §0의 결함 1을 닫았다.
 2. ~~**스포너 + 풀**~~ **완료(2026-07-24)** — 결함 2를 닫았다. `StageDefinition`·`EnemyPool`·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned`. 1의 효과를 관찰할 무대가 됐다.
-3. **골드 + 보상 페이로드** — 재화 축 신설.
+3. ~~**골드 + 보상 페이로드**~~ **완료(2026-07-26)** — 재화 축 신설. `KillRewardPayload`·`IGoldReceiver`·`PlayerWallet`·`EnemyGoldRewardHandler`·`StageDefinition.GoldReward`.
 4. **세이브 + `GameManager`** — 결함 3을 닫는다. 앞의 셋이 다 있어야 저장할 것이 생긴다.
