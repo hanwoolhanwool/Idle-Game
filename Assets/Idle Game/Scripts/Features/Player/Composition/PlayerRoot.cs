@@ -19,6 +19,11 @@ public sealed class PlayerRoot : MonoBehaviour
     [Header("Optional Presenters")]
     [SerializeField] private PlayerHudBinder hudBinder;
 
+    [Header("Save")]
+    [Min(5f)]
+    [Tooltip("주기 자동 저장 간격(초). JSON 직렬화는 GC를 유발하므로 너무 짧게 두지 않는다.")]
+    [SerializeField] private float autoSaveInterval = 60f;
+
     [Header("Skills")]
     [SerializeField] private PlayerStateMachineDriver stateMachineDriver;
     [SerializeField] private MonoBehaviour movementBehaviour;
@@ -46,6 +51,7 @@ public sealed class PlayerRoot : MonoBehaviour
     private EnemyExpRewardHandler _expRewardHandler;
     private PlayerWallet _wallet;
     private EnemyGoldRewardHandler _goldRewardHandler;
+    private SaveService _saveService;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -111,6 +117,12 @@ public sealed class PlayerRoot : MonoBehaviour
         // 적 처치 보상 → 골드 배선. 지갑을 소유하고 브리지로 허브에 연결한다(경험치와 대칭).
         _wallet = new PlayerWallet();
         _goldRewardHandler = new EnemyGoldRewardHandler(_wallet);
+
+        // 저장 조율자. 저장 매체(파일)는 리포지토리 뒤에 숨고, 여기서는 추상만 안다(DIP).
+        // 등록 순서가 곧 Capture/Restore 순서다.
+        _saveService = new SaveService(new FileSaveRepository(Application.persistentDataPath), autoSaveInterval);
+        _saveService.Register(_progressionController);
+        _saveService.Register(_wallet);
         return true;
     }
 
@@ -211,6 +223,15 @@ public sealed class PlayerRoot : MonoBehaviour
             Debug.LogWarning("PlayerRoot: movementBehaviour가 IMoveInputConsumer를 구현하지 않아 모드 전환이 이동에 반영되지 않습니다.", this);
     }
 
+    /// <summary>
+    /// 지금 즉시 저장한다. 앱 일시정지·종료 같은 외부 시점에서 <c>GameManager</c>가 호출한다.
+    /// 조립 실패로 서비스가 없으면 조용히 무시한다.
+    /// </summary>
+    public void SaveNow()
+    {
+        _saveService?.SaveNow();
+    }
+
     /// <summary>방치↔능동 제어 모드를 런타임에 전환한다.</summary>
     public void SetControlMode(PlayerControlMode mode)
     {
@@ -223,6 +244,10 @@ public sealed class PlayerRoot : MonoBehaviour
     private void Initialize()
     {
         _progressionController.Initialize();
+
+        // 세이브 복원은 "베이스 스탯 → 장비 → 버프 → 자원 리필" 순서 계약의 맨 앞에 얹힌다.
+        // 복원이 바꾸는 것은 베이스(레벨)이므로 장비·버프 적용보다 반드시 먼저여야 한다.
+        _saveService.LoadAndRestore();
 
         if (startEquipments != null)
         {
@@ -238,7 +263,7 @@ public sealed class PlayerRoot : MonoBehaviour
         // 베이스 스탯 → 장비 → 버프가 모두 StatMachine에 적용된 뒤,
         // 최종 MaxHp/MaxMp 기준으로 현재 자원을 가득 채운다.
         _statComponent.RefillResourcesToMax();
-        hudBinder?.Bind(_statComponent);
+        hudBinder?.Bind(_statComponent, _progressionController, _wallet);
 
         // 적이 플레이어를 피격 대상으로 찾을 수 있도록 등록(피격 소스 일원화).
         PlayerRegistry.Register(_combatController, transform, () => !_statComponent.IsDead);
@@ -249,6 +274,8 @@ public sealed class PlayerRoot : MonoBehaviour
         // 등록 순서 = 기존 Update 실행 순서(stat → buff → skill → autoCast) 유지.
         _tickables.Add(_statComponent);
         _tickables.Add(_buffController);
+        // 주기 저장을 기존 틱 순회에 얹는다 — Update()는 수정되지 않는다(OCP).
+        _tickables.Add(_saveService);
         if (_skillController != null)
             _tickables.Add(_skillController);
         if (_autoCast != null)

@@ -5,7 +5,7 @@ using System;
 /// 성장 "규칙"(필요 경험치·레벨별 스탯)은 소유하지 않고 <see cref="PlayerLevelTable"/>에 위임한다.
 /// 이 클래스가 아는 것은 "언제 레벨이 오르는가"라는 절차뿐이다(SRP).
 /// </summary>
-public sealed class PlayerProgressionController : IExpReceiver
+public sealed class PlayerProgressionController : IExpReceiver, ISaveable
 {
     private readonly PlayerProgressionState _state;
     private readonly PlayerLevelTable _table;
@@ -19,6 +19,14 @@ public sealed class PlayerProgressionController : IExpReceiver
 
     /// <summary>다음 레벨까지 필요한 경험치. 최고 레벨이면 <see cref="int.MaxValue"/>.</summary>
     public int RequiredExpForNextLevel => _table.RequiredExp(_state.Level);
+
+    /// <summary>
+    /// 레벨 또는 경험치가 바뀐 직후 발행된다.
+    /// 레벨업은 베이스 스탯을 건드려 <c>StatMachine.OnStatChanged</c>를 유발하지만,
+    /// <b>레벨이 오르지 않은 경험치 획득</b>은 어떤 스탯도 바꾸지 않아 표시가 멈춘다.
+    /// 성장 축이 자기 변경을 직접 방송해야 하는 이유다.
+    /// </summary>
+    public event Action ProgressChanged;
 
     public PlayerProgressionController(
         PlayerProgressionConfig config,
@@ -43,6 +51,7 @@ public sealed class PlayerProgressionController : IExpReceiver
     public void Initialize()
     {
         RefreshBaseStats();
+        ProgressChanged?.Invoke();
     }
 
     public void AddExp(int amount)
@@ -68,6 +77,7 @@ public sealed class PlayerProgressionController : IExpReceiver
             _state.Exp = 0;
 
         RefreshBaseStats();
+        ProgressChanged?.Invoke();
     }
 
     /// <summary>현재 성장 상태를 베이스 스탯으로 환산해 StatMachine에 반영한다.</summary>
@@ -75,5 +85,30 @@ public sealed class PlayerProgressionController : IExpReceiver
     {
         PlayerBaseStatSet baseStats = _resolver.Resolve(_state);
         _orchestrator.ApplyBaseStats(baseStats);
+    }
+
+    public void CaptureState(PlayerSaveData data)
+    {
+        data.Progression.Level = _state.Level;
+        data.Progression.Exp = _state.Exp;
+        data.Progression.PromotionTier = _state.PromotionTier;
+    }
+
+    /// <summary>
+    /// 저장된 <b>원인</b>(레벨·경험치)만 복원하고, 결과인 베이스 스탯은 테이블로 <b>재계산</b>한다.
+    /// 밸런스 패치로 성장 곡선이 바뀌어도 로드 즉시 새 곡선이 반영되는 이유다.
+    /// </summary>
+    public void RestoreState(PlayerSaveData data)
+    {
+        if (data.Progression == null)
+            return;
+
+        // 밸런스 패치로 상한이 내려간 뒤 저장된 레벨이 그보다 높을 수 있다(정본 §6.8).
+        _state.Level = Math.Clamp(data.Progression.Level, 1, _table.MaxLevel);
+        _state.Exp = Math.Max(0, data.Progression.Exp);
+        _state.PromotionTier = Math.Max(0, data.Progression.PromotionTier);
+
+        RefreshBaseStats();
+        ProgressChanged?.Invoke();
     }
 }
