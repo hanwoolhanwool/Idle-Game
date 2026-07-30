@@ -32,4 +32,20 @@ public static class PlayerRegistry
         _transform = null;
         _isAliveProbe = null;
     }
+
+    /// <summary>
+    /// 도메인 리로드 비활성 시 이전 세션의 플레이어 참조가 잔류하는 것을 막는다.
+    /// <para>
+    /// 특히 <c>_isAliveProbe</c>는 파괴된 <c>PlayerStatComponent</c>를 캡처한 클로저라,
+    /// 남아 있으면 스포너의 <c>HasPlayer</c> 게이트가 <b>없는 플레이어를 있다고 답한다</b>.
+    /// 새 플레이어가 등록되기 전 한 프레임 동안 적이 유령을 향해 스폰될 수 있다.
+    /// </para>
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        _damageable = null;
+        _transform = null;
+        _isAliveProbe = null;
+    }
 }
