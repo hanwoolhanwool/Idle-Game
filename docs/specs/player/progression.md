@@ -1,7 +1,7 @@
 # Player 성장 (Progression)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-22 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §2.3·§5.2 (레벨→스탯) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §4.3 (전직·스킬 습득) · **설계 근거**: [m0-close-the-loop-plan.md](../../design/m0-close-the-loop-plan.md) §5.1 (레벨 테이블·리졸버)
+> **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §2.3·§5.2 (레벨→스탯) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §4.3 (전직·스킬 습득) · **설계 근거**: [m0-close-the-loop-plan.md](../../design/m0-close-the-loop-plan.md) §5.1 (레벨 테이블·리졸버) · **영속화**: [specs/core/save.md](../core/save.md)
 
 ---
 
@@ -141,6 +141,8 @@ sequenceDiagram
 | 계약 | 방향 | 설명 |
 |------|------|------|
 | `IExpReceiver.AddExp(int)` | 외부가 **호출** | 경험치 수신 진입점. `PlayerProgressionController`가 구현. 적 처치 브리지(`EnemyExpRewardHandler`)가 이 계약으로만 성장을 안다 |
+| `ISaveable.CaptureState/RestoreState` | 외부가 **호출** | 세이브 조각 계약. `SaveService`가 등록 순서대로 부른다. 성장 도메인은 파일·JSON·저장 시점을 모른다([specs/core/save.md](../core/save.md)) |
+| `ProgressChanged` 이벤트 | 외부가 **구독** | 레벨·경험치 변경 방송. 레벨이 오르지 않은 경험치 획득은 어떤 스탯도 바꾸지 않아 `StatMachine.OnStatChanged`로는 표시 갱신이 걸리지 않는다(HUD 갱신 트리거) |
 | `IPlayerBaseStatResolver.Resolve` | 내부 **위임** | 성장 산출 규칙(교체 가능) |
 | `PlayerStatOrchestrator.ApplyBaseStats` | 이 계층이 **호출** | 베이스 스탯 반영([[stats]]) |
 | `PlayerProgressionController.State` | 외부가 **조회** | HUD 등 성장 상태 표시([[presentation]]) |
@@ -184,13 +186,13 @@ sequenceDiagram
 
 - ~~**미사용 모델 `PlayerProgressionData`**~~ **해소(2026-07-21, 커밋 58906bd)**: 미사용·오타(`AttakPower`·`Defence`) 클래스로 확인되어 **삭제 완료**. `docs/reports/unused-duplicate-models-cleanup.md`의 제안 중 이 항목만 선행 이행됐고, `TimedBuffData` 등 나머지 정리 대상은 아직 코드에 남아 있다.
 - **`PromotionTier` 미사용**: 승급 상태가 있으나 산출에 반영되지 않음. 전직 시스템(M2)에서 `PlayerBaseStatResolver.Resolve`에 차수별 보정을 합산할 예정(리졸버 주석에 명시, 호출부 불변 — OCP).
-- **세이브 부재**: 레벨·경험치가 재기동 시 초기화된다. M0 ④(세이브/로드, `docs/design/player-data-management-plan.md` 1단계)에서 해소 예정.
+- ~~**세이브 부재**~~ **해소(2026-08-23)**: `PlayerProgressionController`가 `ISaveable`을 구현해 레벨·경험치·전직 차수를 `ProgressionSaveSection`에 기록하고, 복원 시 베이스 스탯을 테이블로 **재계산**한다(저장값을 그대로 쓰지 않는다). 상세: [specs/core/save.md](../core/save.md) §5.3.
 
 ## 12. 확장 여지
 
 - **전직·연구 보정**: `PlayerBaseStatResolver.Resolve`에 `PromotionTier`·연구 보정을 합산(M2). 계약이 상태만 받으므로 호출부는 그대로다.
 - **스킬 포인트 컬럼**: 전직/스킬 창(M2)에서 `PlayerLevelTable`에 `SkillPointRewards[]` 컬럼만 추가한다(`docs/design/skill-menu-plan.md` §6.4).
-- **세이브/로드**: `PlayerProgressionState`가 순수 데이터라 직렬화 저장의 토대.
+- ~~**세이브/로드**~~ **구현됨(2026-08-23)**: `PlayerProgressionState`가 순수 데이터라는 점이 그대로 `ProgressionSaveSection`과 1:1 매핑되는 토대가 됐다([specs/core/save.md](../core/save.md)).
 - **경험치 배율**: `ExpGainRate` 스탯([[stats]])을 `AddExp`에 곱해 성장 가속 아이템 지원 여지.
 
 ## 13. 파일 위치

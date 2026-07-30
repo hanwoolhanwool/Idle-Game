@@ -1,7 +1,7 @@
 # M0 — 루프 닫기(Close the Loop) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: 진행 중 — 결함 1(레벨→스탯)·2(스포너·풀) **구현 완료**, 결함 3은 **골드 축 완료·세이브 미착수**
-> **최종 갱신**: 2026-07-26 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
+> **종류**: 설계 명세 (TDD) · **상태**: **구현 완료** — 결함 1·2·3 모두 해소. 씬 배선·런타임 검증(10분 방치 DoD) 대기
+> **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [stats.md](../specs/player/stats.md) · [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)
 > **관련 계획서**: [player-data-management-plan.md](./player-data-management-plan.md) (세이브·재화의 정본 — 이 문서는 그중 M0 범위만 구현한다)
 
@@ -15,13 +15,15 @@
 |---|-----------|-----------|
 | 1 | ~~**레벨업해도 강해지지 않는다**~~ **해소(2026-07-21, 커밋 58906bd)** | 당시 `Resolve(progressionState, config)`가 `progressionState`를 받고도 쓰지 않았다. 현재는 `Resolve(state)`가 `PlayerLevelTable.ResolveStats(state.Level)`로 레벨을 실제 반영한다([base-stat-resolver-level-scaling.md](../reports/base-stat-resolver-level-scaling.md)) |
 | 2 | ~~**적이 다시 나오지 않는다**~~ **해소(2026-07-24)** | 당시 `EnemyUnit.Die()`가 `SetActive(false)`로 끝나 재공급 주체가 없었다. 현재는 `EnemySpawner`(지속 스폰+초기 채움)가 `EnemyPool`에서 적을 재사용하고, `EnemyUnit.Despawned` 이벤트로 죽은 적을 풀에 반납한다 |
-| 3 | **성장이 휘발된다** | 저장·로드가 전무하다. `GameManager`는 `Start()`/`Update()`가 빈 스텁이다 |
+| 3 | ~~**성장이 휘발된다**~~ **해소(2026-08-23)** | 당시 저장·로드가 전무했고 `GameManager`는 `Start()`/`Update()`가 빈 스텁이었다. 현재는 `SaveService`가 `ISaveable` 조각을 모아 `FileSaveRepository`(원자적 쓰기)에 맡기고, `GameManager`가 앱 일시정지·종료 시점을 담당한다(as-built: [specs/core/save.md](../specs/core/save.md)) |
 
 M0는 **이 셋을 닫아 "방치할 수 있는 상태"를 만드는 것**만을 목표로 한다. 재미·밸런싱·콘텐츠 물량은 M1 이후다.
 
 > **진행 현황(2026-07-24)**: 결함 1·2 구현 완료. 결함 1 — `PlayerLevelTable`(SO) 신설, `PlayerBaseStatSet`의 `StatType` 키 전환, 리졸버 계약 변경(`Resolve(state)`), `PlayerProgressionData` 삭제(§5.1·§7·§8). 결함 2 — `StageDefinition`(SO)·`EnemyPool`(순수 C# Stack 풀)·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned` 이벤트 신설, 씬 배선 완료(`Enemy.prefab`·`Stage_01.asset`). 스포너는 **지속 스폰(정원 유지) + 진입 시 초기 일괄 채움 + `HasPlayer` 게이트(폴백 제거)** 로 구현했다(§6.1 flowchart 대비 초기 채움·게이트는 as-built 추가). §5.2 필드는 전부 구현됐다.
 
-> **골드 축 완료(2026-07-26)**: 결함 3의 재화 축을 먼저 닫았다. `KillRewardPayload`(readonly struct) 신설로 `EnemyKillReward.Publish`가 페이로드 발행으로 전환됐고(§6.2·§7의 계약 변경 반영), `IGoldReceiver`·`PlayerWallet`(순수 C#, 잔액 `long`, 원자적 `TrySpend`)·`EnemyGoldRewardHandler`(경험치 브리지와 대칭)가 신설됐다. `StageDefinition.GoldReward`도 이때 도입해 `EnemyUnit.Configure(stat, exp, gold)`로 주입한다. `PlayerRoot`가 지갑·브리지를 조립하고 `OnDestroy`에서 `Dispose`한다. 런타임 검증: 3마리 처치 시 `Gold=15`·`Exp=30`(같은 페이로드에서 두 브리지가 각자 필드만 소비 — ISP 실증). **남은 범위는 세이브/로드·`GameManager`·`NumberFormatter`다.**
+> **골드 축 완료(2026-07-26)**: 결함 3의 재화 축을 먼저 닫았다. `KillRewardPayload`(readonly struct) 신설로 `EnemyKillReward.Publish`가 페이로드 발행으로 전환됐고(§6.2·§7의 계약 변경 반영), `IGoldReceiver`·`PlayerWallet`(순수 C#, 잔액 `long`, 원자적 `TrySpend`)·`EnemyGoldRewardHandler`(경험치 브리지와 대칭)가 신설됐다. `StageDefinition.GoldReward`도 이때 도입해 `EnemyUnit.Configure(stat, exp, gold)`로 주입한다. `PlayerRoot`가 지갑·브리지를 조립하고 `OnDestroy`에서 `Dispose`한다. 런타임 검증: 3마리 처치 시 `Gold=15`·`Exp=30`(같은 페이로드에서 두 브리지가 각자 필드만 소비 — ISP 실증). 이후 세이브 축까지 닫혀 M0 구현 범위가 완료됐다(아래 노트).
+
+> **세이브 축 완료(2026-08-23)**: 결함 3의 나머지 절반을 닫았다. `ISaveRepository`·`ISaveable`·`ISaveMigration` 계약과 `FileSaveRepository`(tmp→bak→rename 원자적 쓰기, 백업 복구)·`SaveService`(조각 수집, 주기 저장, 버전 가드, 마이그레이션 연쇄)·`PlayerSaveData`(Progression·Wallet 섹션)를 신설했다. `PlayerProgressionController`·`PlayerWallet`이 `ISaveable`을 구현하고, `PlayerRoot`가 서비스를 조립해 틱 순회에 등록하며(`Update()` 무수정 — OCP), `GameManager`가 `OnApplicationPause(true)`·`OnApplicationQuit`에서 `SaveNow()`를 부른다. `NumberFormatter`(유효숫자 3자리 축약)도 함께 신설해 디버그 HUD의 골드·레벨 표시에 연결했다. EditMode 테스트 73건 작성(§10). **남은 범위는 씬 배선(`GameManager` 배치)과 10분 방치 런타임 검증이다.**
 
 ## 1. 개요·목적
 
@@ -353,4 +355,4 @@ public sealed class PlayerBaseStatSet { Dictionary<StatType, float> ... }
 1. ~~**레벨 테이블 + 리졸버**~~ **완료(2026-07-21)** — 가장 작고 독립적. 다른 시스템을 건드리지 않고 §0의 결함 1을 닫았다.
 2. ~~**스포너 + 풀**~~ **완료(2026-07-24)** — 결함 2를 닫았다. `StageDefinition`·`EnemyPool`·`EnemySpawner`·`EnemyUnit.Configure`/`Despawned`. 1의 효과를 관찰할 무대가 됐다.
 3. ~~**골드 + 보상 페이로드**~~ **완료(2026-07-26)** — 재화 축 신설. `KillRewardPayload`·`IGoldReceiver`·`PlayerWallet`·`EnemyGoldRewardHandler`·`StageDefinition.GoldReward`.
-4. **세이브 + `GameManager`** — 결함 3을 닫는다. 앞의 셋이 다 있어야 저장할 것이 생긴다.
+4. ~~**세이브 + `GameManager`**~~ **완료(2026-08-23)** — 결함 3을 닫았다. `ISaveRepository`·`ISaveable`·`ISaveMigration`·`FileSaveRepository`·`SaveService`·`PlayerSaveData`·`GameManager`·`NumberFormatter`. as-built 명세는 [specs/core/save.md](../specs/core/save.md)가 정본이다.

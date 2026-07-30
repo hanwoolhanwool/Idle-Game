@@ -1,7 +1,7 @@
 # Player 표현 계층 (Presentation)
 
 > **종류**: 아키텍처 명세 (as-built) · **상태**: 완료
-> **최종 갱신**: 2026-07-10 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §5.3 (HUD 실체화) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §5 (동료 스킬 버튼)
+> **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §5.3 (HUD 실체화) · [characters-and-companions.md](../../gdd/characters-and-companions.md) §5 (동료 스킬 버튼)
 
 ---
 
@@ -33,7 +33,7 @@
 | 구성요소 | 종류 | 책임 |
 |----------|------|------|
 | `IPlayerHud` | interface | HUD 렌더 계약(`Render(snapshot)`) |
-| `PlayerHudSnapshot` | readonly struct | HUD 표시용 값 DTO(HP/MP/ATK/DPS 등) |
+| `PlayerHudSnapshot` | readonly struct | HUD 표시용 값 DTO(HP/MP/ATK/DPS + 레벨·경험치·골드) |
 | `PlayerHudBinder` | MonoBehaviour | 스탯 변경 구독→프레임 합치기→스냅샷 생성→HUD 위임 |
 | `DebugPlayerHud` | class (`IPlayerHud`) | 로그 기반 임시 HUD |
 | `SkillButton` | MonoBehaviour | 슬롯 버튼 클릭→스킬 시전 |
@@ -55,10 +55,15 @@ classDiagram
         +float AttackSpeed
         +float MoveSpeed
         +float Dps
+        +int Level
+        +int Exp
+        +int RequiredExp
+        +long Gold
+        +bool IsMaxLevel
     }
     class PlayerHudBinder {
         <<MonoBehaviour>>
-        +Bind(PlayerStatComponent)
+        +Bind(statComponent, progression, wallet)
         +Unbind()
         +RefreshImmediate(PlayerStatComponent)
     }
@@ -71,6 +76,8 @@ classDiagram
     PlayerHudBinder --> IPlayerHud : 렌더 위임
     PlayerHudBinder --> PlayerHudSnapshot : 생성
     PlayerHudBinder --> PlayerStatComponent : Stats.OnStatChanged 구독
+    PlayerHudBinder --> PlayerProgressionController : ProgressChanged 구독
+    PlayerHudBinder --> PlayerWallet : GoldChanged 구독
     SkillButton --> PlayerSkillController : TryUseSkill
 ```
 
@@ -78,7 +85,12 @@ classDiagram
 
 ### `PlayerHudSnapshot` (readonly struct, DTO)
 
-HUD가 필요로 하는 **값만** 담은 불변 스냅샷: `CurrentHp/MaxHp`, `CurrentMp/MaxMp`, `AttackPower`, `AttackSpeed`, `MoveSpeed`, `Dps`. `StatMachine` 내부 구조를 노출하지 않는 경계 역할.
+HUD가 필요로 하는 **값만** 담은 불변 스냅샷이다.
+
+- **전투**: `CurrentHp/MaxHp`, `CurrentMp/MaxMp`, `AttackPower`, `AttackSpeed`, `MoveSpeed`, `Dps`
+- **성장·재화**: `Level`, `Exp`, `RequiredExp`, `Gold` **(2026-08-23 추가)**
+
+출처가 셋(`StatMachine`·`PlayerProgressionController`·`PlayerWallet`)이어도 **표시 시점은 하나**이므로 한 구조체에 모은다. `StatMachine` 내부 구조를 노출하지 않는 경계 역할은 그대로다. 최고 레벨에서는 `RequiredExp`가 `int.MaxValue`이므로 `IsMaxLevel`로 판별해 "MAX"로 표시한다(그대로 찍으면 의미 없는 수가 나온다). 골드 표기는 `NumberFormatter`가 유효숫자 3자리로 축약한다.
 
 ## 6. 상세 로직·상태
 
@@ -127,6 +139,8 @@ flowchart TD
 |------|------|------|
 | `IPlayerHud.Render` | `Binder`가 **호출** | HUD 구현 위임(로그↔실 UI 교체) |
 | `PlayerStatComponent.Stats.OnStatChanged` | `Binder`가 **구독** | 스탯 변경 신호. `StatMachine`(`.Stats`)이 발행([[stats]]) |
+| `PlayerProgressionController.ProgressChanged` | `Binder`가 **구독** | 레벨·경험치 변경 신호. 스탯을 바꾸지 않는 경험치 획득은 `OnStatChanged`로 잡히지 않으므로 별도 축이 필요하다([[progression]]) |
+| `PlayerWallet.GoldChanged` | `Binder`가 **구독** | 잔액 변경 신호. 골드는 스탯이 아니라 스탯 머신의 신호를 타지 않는다 |
 | `PlayerSkillController.TryUseSkill` | `SkillButton`이 **호출** | 시전 진입점([[skills]]) |
 | `PlayerRoot.Debug*` 훅 | `DebugCommands`가 **호출** | 에디터 디버그(내부 API) |
 | `Bind(...)` | `PlayerRoot`가 **호출** | HUD·버튼 배선 |

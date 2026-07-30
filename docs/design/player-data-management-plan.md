@@ -1,7 +1,7 @@
 # 플레이어 데이터 관리 체계 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: Draft
-> **최종 갱신**: 2026-07-13 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) — 세이브·재화는 **M0**, 인벤토리·아이템은 **M1**
+> **종류**: 설계 명세 (TDD) · **상태**: Draft — **단계1(진행도·재화 영속화) 구현 완료**, 단계2~4 미착수
+> **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) — 세이브·재화는 **M0**, 인벤토리·아이템은 **M1** · **as-built**: [specs/core/save.md](../specs/core/save.md)(단계1 구현 결과)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [equipment.md](../specs/player/equipment.md) · [stats.md](../specs/player/stats.md) · [player/README.md](../specs/player/README.md)
 >
 > 이 문서가 플레이어 데이터·영속화의 **정본**이다. 같은 주제를 다루던 `data-persistence.md`는 재화(`WalletSaveSection`)·인벤토리 읽기 계약(`IReadOnlyInventory`)·마이그레이션 계약(`ISaveMigration`)을 이 문서로 흡수한 뒤 폐기했다.
@@ -458,9 +458,9 @@ public interface IReadOnlyInventory
 
 | 단계 | 내용 | 이 순서인 이유 |
 |:---:|------|---------------|
-| **1** | `PlayerSaveData`·`ISaveRepository`·`FileSaveRepository`(원자적 쓰기)·`SaveService`·`ISaveable`·**`ISaveMigration` 계약**(pass-through) + **Progression·Wallet만** 저장/로드 연결 | 가장 작은 슬라이스로 파이프라인 전체를 먼저 검증. `PlayerProgressionState`가 이미 순수 POCO라 착수 비용 최저. `Wallet`은 아이템 도메인에 의존하지 않아 여기 얹는 비용이 거의 0 |
+| **1** | ~~`PlayerSaveData`·`ISaveRepository`·`FileSaveRepository`(원자적 쓰기)·`SaveService`·`ISaveable`·**`ISaveMigration` 계약**(pass-through) + **Progression·Wallet만** 저장/로드 연결~~ **완료(2026-08-23)** — as-built: [specs/core/save.md](../specs/core/save.md) | 가장 작은 슬라이스로 파이프라인 전체를 먼저 검증. `PlayerProgressionState`가 이미 순수 POCO라 착수 비용 최저. `Wallet`은 아이템 도메인에 의존하지 않아 여기 얹는 비용이 거의 0 |
 | **2** | `ItemDefinition`·`IItemCatalog`·`ItemInstance`·`PlayerInventory`(+`IReadOnlyInventory`) 신설 + `EquipSlot` 도입 + `PlayerEquipmentController` UID 기반 리팩터링 + SourceId 규약 변경 | 구조 변경이 가장 크다. 세이브 파이프라인이 검증된 뒤에 해야 롤백이 쉽다 |
-| **3** | `WorldSaveSection`(스테이지·스폰·`LastSaveUtcTicks`) + 자동 저장 정책(주기·이벤트·Pause) | 방치형 핵심 루프의 시간 기준선 확보 |
+| **3** | `WorldSaveSection`(스테이지·스폰·`LastSaveUtcTicks`) + ~~자동 저장 정책(주기·이벤트·Pause)~~(**단계1에서 선행 구현** — `SaveService.Tick` + `GameManager`의 Pause/Quit 훅) | 방치형 핵심 루프의 시간 기준선 확보. 저장 **정책**은 단계1의 파이프라인을 검증하려면 어차피 필요해 앞당겨졌고, 남은 것은 **무엇을 저장할지**(시간 기준선)다 |
 | **4** | 마이그레이션 **구현체**, 무결성 검증, 서버 리포지토리 대비 | 출시 준비 단계. 계약은 1단계에 있으므로 여기선 구현만 얹는다 |
 
 ## 14. 신규/수정 파일 요약

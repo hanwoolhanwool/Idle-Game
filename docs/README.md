@@ -25,6 +25,7 @@
 |--------|--------|------|
 | **Player** | [`specs/player/`](./specs/player) | 상태 머신·스탯·스킬·전투·입력·이동·성장·장비·버프·표현 + `PlayerRoot` 조립 명세 (10개 시스템). 심사자용 추천 순서는 [player/README.md](./specs/player/README.md) §0 참조 |
 | **Enemy** | [`specs/enemy/`](./specs/enemy) | 적 처치 경험치 보상 배선([kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) — 적↔성장을 허브+브리지로 분리 |
+| **Core** | [`specs/core/`](./specs/core) | 세이브·로드([save.md](./specs/core/save.md)) — 원인 저장·결과 재계산 · 원자적 쓰기 · `ISaveable` 조각 자치 |
 
 **설계·계획** — [`design/`](./design) (구현 전·중의 방향)
 
@@ -179,7 +180,9 @@ flowchart TB
 
 ```
 Assets/Idle Game/Scripts/
-├── Core/Game/              게임 매니저
+├── Core/
+│   ├── Game/               게임 매니저(앱 생명주기 저장 훅)
+│   └── Save/               세이브·로드 ── 명세: specs/core/save.md
 ├── Data/
 │   ├── Definitions/        ScriptableObject 데이터 (Skill/Buff/Equipment/Stat 정의)
 │   └── Input/              입력 리더

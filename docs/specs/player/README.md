@@ -21,7 +21,7 @@
 | | 이동 | [movement.md](./movement.md) | 스탯 기반 속도 물리 이동 |
 | | 성장 | [progression.md](./progression.md) | 레벨·경험치→베이스 스탯 |
 | | 장비 | [equipment.md](./equipment.md) | 장비=Source 태깅 modifier |
-| 설계 | 데이터·영속화 | [player-data-management-plan.md](../../design/player-data-management-plan.md) | **(Draft·미구현)** 소유 데이터 단일 진실 공급원 + 세이브. 미구현이라 `design/`에 있다 |
+| 아키텍처 | 데이터·영속화 | [specs/core/save.md](../core/save.md) | **(구현 완료)** 세이브·로드 — 원인 저장·결과 재계산 · 원자적 쓰기 · 조각 자치. 인벤토리 등 잔여 설계는 [player-data-management-plan.md](../../design/player-data-management-plan.md) |
 | | 버프 | [buffs.md](./buffs.md) | 버프=시한부 modifier |
 | | 표현 | [presentation.md](./presentation.md) | HUD DTO 경계 + 스킬 버튼 |
 

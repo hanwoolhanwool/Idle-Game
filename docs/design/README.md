@@ -5,8 +5,8 @@
 
 | 문서 | 상태 | 내용 |
 |------|------|------|
-| [m0-close-the-loop-plan.md](./m0-close-the-loop-plan.md) | 진행 중 | **M0 "루프 닫기" 정본** — 결함 1(레벨→스탯) 완료, 결함 2(스포너)·3(세이브) 미착수 |
-| [player-data-management-plan.md](./player-data-management-plan.md) | Draft | 소유 데이터(레벨·아이템·장비·위치) 계층 + 세이브/로드의 정본 |
+| [m0-close-the-loop-plan.md](./m0-close-the-loop-plan.md) | 구현 완료 | **M0 "루프 닫기" 정본** — 결함 1(레벨→스탯)·2(스포너)·3(골드·세이브) 모두 해소. 세이브 as-built: [core/save.md](../specs/core/save.md). 씬 배선·런타임 검증 대기 |
+| [player-data-management-plan.md](./player-data-management-plan.md) | Draft — 세이브 축 구현 완료 | 소유 데이터(레벨·아이템·장비·위치) 계층 + 세이브/로드의 정본. 단계1(진행도·재화 저장)은 구현돼 as-built가 [core/save.md](../specs/core/save.md)로 분리됐고, 인벤토리·장비 계층은 M1 |
 | [skill-menu-plan.md](./skill-menu-plan.md) | Draft (M2) | 스킬 창(인벤토리·습득·장착 UI) — 착수 보류 |
 | [server-application-plan.md](./server-application-plan.md) | Draft (별도 기술 트랙) | 서버 적용 — 클라 로컬 전투 + 서버 권위(계정·저장·presence+채팅·실시간 매치 룸). 파티 보스전 → 실시간 PvP 순. 스택은 스파이크에서 확정 |
 | [combat-skill-plan.md](./combat-skill-plan.md) | 연혁 | 스킬 시스템 구현 계획서 (as-built: [skills.md](../specs/player/skills.md)) |
