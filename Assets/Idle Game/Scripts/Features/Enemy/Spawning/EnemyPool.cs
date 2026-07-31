@@ -12,6 +12,9 @@ public sealed class EnemyPool
     private readonly Transform _parent;
     private readonly Stack<EnemyUnit> _inactive = new();
 
+    /// <summary>이 풀이 재사용하는 프리팹. 스테이지 전환 시 교체 필요 여부 판단에 쓴다.</summary>
+    public EnemyUnit Prefab => _prefab;
+
     public EnemyPool(EnemyUnit prefab, Transform parent, int prewarm)
     {
         _prefab = prefab;
@@ -35,6 +38,20 @@ public sealed class EnemyPool
 
         unit.gameObject.SetActive(false);
         _inactive.Push(unit);
+    }
+
+    /// <summary>
+    /// 보관 중인 인스턴스를 전부 파괴한다. <b>다른 프리팹으로 교체할 때</b> 호출한다 —
+    /// 폐기하지 않으면 스테이지를 오갈 때마다 쓰지 않는 인스턴스가 씬에 누적된다.
+    /// </summary>
+    public void DestroyAll()
+    {
+        while (_inactive.Count > 0)
+        {
+            EnemyUnit unit = _inactive.Pop();
+            if (unit != null)
+                Object.Destroy(unit.gameObject);
+        }
     }
 
     private EnemyUnit CreateInactive()
