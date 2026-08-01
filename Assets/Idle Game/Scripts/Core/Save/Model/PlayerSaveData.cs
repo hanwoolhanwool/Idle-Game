@@ -15,6 +15,7 @@ public sealed class PlayerSaveData
 
     public ProgressionSaveSection Progression = new();
     public WalletSaveSection Wallet = new();
+    public WorldSaveSection World = new();
 }
 
 /// <summary>성장 상태 섹션. <c>PlayerProgressionState</c>와 1:1 매핑된다.</summary>
@@ -70,4 +71,35 @@ public sealed class CurrencyEntry
 {
     public string CurrencyId;
     public long Amount;
+}
+
+/// <summary>
+/// 월드 진행 섹션(스키마 v2에서 추가). 스테이지 진척과 <b>시간 기준선</b>을 담는다.
+/// <para>
+/// 스테이지를 배열 인덱스가 아니라 <see cref="StageId"/> 문자열로 저장하는 이유:
+/// 인덱스를 쓰면 스테이지를 중간에 하나 끼워 넣는 순간 모든 기존 유저의 진행이 한 칸씩 밀린다.
+/// 식별자는 순서와 무관하며, 목록에서 사라진 id는 첫 스테이지로 폴백하면 된다.
+/// </para>
+/// </summary>
+[Serializable]
+public sealed class WorldSaveSection
+{
+    /// <summary>현재 스테이지 식별자. 비어 있으면 첫 스테이지에서 시작한다.</summary>
+    public string StageId = string.Empty;
+
+    /// <summary>현재 스테이지에서 누적한 처치 수.</summary>
+    public int KillsInStage;
+
+    /// <summary>
+    /// 최근 실측 처치율(초당). 오프라인 보상 환산의 입력이다.
+    /// 이론값이 아니라 실측을 쓰는 이유는 온라인과 오프라인이 같은 지표를 공유하게 하기 위함이다.
+    /// </summary>
+    public float KillsPerSecond;
+
+    /// <summary>
+    /// 마지막 저장 시각(UTC Ticks). <c>DateTime</c>을 직접 담지 않는 이유는
+    /// <c>JsonUtility</c>가 이를 직렬화하지 못하기 때문이다.
+    /// 0이면 기준선이 없다는 뜻이라 오프라인 보상을 지급하지 않는다.
+    /// </summary>
+    public long LastSaveUtcTicks;
 }

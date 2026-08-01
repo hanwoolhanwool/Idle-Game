@@ -13,7 +13,7 @@ using UnityEngine;
 public sealed class SaveService : ITickable
 {
     /// <summary>현재 앱이 이해하는 스키마 버전.</summary>
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
 
     private readonly ISaveRepository _repository;
     private readonly List<ISaveable> _saveables = new();
