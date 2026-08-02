@@ -24,6 +24,16 @@ public sealed class PlayerRoot : MonoBehaviour
     [Tooltip("주기 자동 저장 간격(초). JSON 직렬화는 GC를 유발하므로 너무 짧게 두지 않는다.")]
     [SerializeField] private float autoSaveInterval = 60f;
 
+    [Header("Stage")]
+    [Tooltip("스테이지 목록·순서. 비우면 스테이지 진행이 비활성화되고 M0처럼 단일 스테이지를 반복한다.")]
+    [SerializeField] private StageCatalog stageCatalog;
+
+    [Tooltip("적 공급 주체. 비어 있으면 씬에서 찾는다.")]
+    [SerializeField] private EnemySpawner enemySpawner;
+
+    [Tooltip("오프라인 보상 밸런스. 비우면 보상이 지급되지 않는다.")]
+    [SerializeField] private OfflineRewardConfig offlineRewardConfig;
+
     [Header("Skills")]
     [SerializeField] private PlayerStateMachineDriver stateMachineDriver;
     [SerializeField] private MonoBehaviour movementBehaviour;
@@ -52,6 +62,7 @@ public sealed class PlayerRoot : MonoBehaviour
     private PlayerWallet _wallet;
     private EnemyGoldRewardHandler _goldRewardHandler;
     private SaveService _saveService;
+    private StageController _stageController;
 
     private readonly List<ITickable> _tickables = new();
 
@@ -77,6 +88,7 @@ public sealed class PlayerRoot : MonoBehaviour
         _hitReaction?.Dispose();
         _expRewardHandler?.Dispose();
         _goldRewardHandler?.Dispose();
+        _stageController?.Dispose();
 
         if (_combatController != null)
             PlayerRegistry.Unregister(_combatController);
@@ -120,9 +132,34 @@ public sealed class PlayerRoot : MonoBehaviour
 
         // 저장 조율자. 저장 매체(파일)는 리포지토리 뒤에 숨고, 여기서는 추상만 안다(DIP).
         // 등록 순서가 곧 Capture/Restore 순서다.
-        _saveService = new SaveService(new FileSaveRepository(Application.persistentDataPath), autoSaveInterval);
+        _saveService = new SaveService(
+            new FileSaveRepository(Application.persistentDataPath),
+            autoSaveInterval,
+            new ISaveMigration[] { new SaveMigration_V1ToV2() });
         _saveService.Register(_progressionController);
         _saveService.Register(_wallet);
+
+        // 스테이지 진행. 카탈로그가 없으면 컨트롤러를 만들지 않아 M0 동작(단일 스테이지 반복)이 유지된다.
+        if (stageCatalog != null && !stageCatalog.IsEmpty)
+        {
+            if (enemySpawner == null)
+                enemySpawner = FindFirstObjectByType<EnemySpawner>();
+
+            _stageController = new StageController(
+                stageCatalog,
+                enemySpawner,
+                _progressionController,
+                _wallet,
+                offlineRewardConfig);
+
+            // 전환 직후 강제 종료로 진척이 통째로 날아가지 않도록 즉시 저장을 연결한다.
+            _stageController.SaveRequested += _saveService.SaveNow;
+
+            // 등록을 마지막에 두는 이유: 복원은 등록 순서대로 일어나므로, 오프라인 경험치가
+            // 복원된 레벨 위에 얹히려면 진행도·지갑이 먼저 복원되어야 한다.
+            _saveService.Register(_stageController);
+        }
+
         return true;
     }
 
@@ -245,6 +282,9 @@ public sealed class PlayerRoot : MonoBehaviour
     {
         _progressionController.Initialize();
 
+        // 스포너 구독·첫 스테이지 적용. 세이브가 있으면 아래 LoadAndRestore가 덮어쓴다.
+        _stageController?.Initialize();
+
         // 세이브 복원은 "베이스 스탯 → 장비 → 버프 → 자원 리필" 순서 계약의 맨 앞에 얹힌다.
         // 복원이 바꾸는 것은 베이스(레벨)이므로 장비·버프 적용보다 반드시 먼저여야 한다.
         _saveService.LoadAndRestore();
@@ -276,6 +316,8 @@ public sealed class PlayerRoot : MonoBehaviour
         _tickables.Add(_buffController);
         // 주기 저장을 기존 틱 순회에 얹는다 — Update()는 수정되지 않는다(OCP).
         _tickables.Add(_saveService);
+        if (_stageController != null)
+            _tickables.Add(_stageController);
         if (_skillController != null)
             _tickables.Add(_skillController);
         if (_autoCast != null)
