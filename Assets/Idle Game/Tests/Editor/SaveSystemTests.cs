@@ -309,9 +309,9 @@ public sealed class SaveSystemTests
     {
         var repository = new FakeSaveRepository
         {
-            Stored = new PlayerSaveData { Version = 0 }
+            Stored = new PlayerSaveData { Version = 1 }
         };
-        var step = new SpyMigration { FromVersion = 0 };
+        var step = new SpyMigration { FromVersion = 1 };
         var service = new SaveService(repository, 60f, new List<ISaveMigration> { step });
         var saveable = new SpySaveable();
         service.Register(saveable);
@@ -327,7 +327,7 @@ public sealed class SaveSystemTests
     {
         var repository = new FakeSaveRepository
         {
-            Stored = new PlayerSaveData { Version = 0 }
+            Stored = new PlayerSaveData { Version = 1 }
         };
         var service = new SaveService(repository); // 마이그레이션 등록 0개
         var saveable = new SpySaveable();

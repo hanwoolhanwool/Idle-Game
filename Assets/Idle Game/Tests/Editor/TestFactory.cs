@@ -61,6 +61,57 @@ internal static class TestFactory
             new PlayerStatOrchestrator(statComponent));
     }
 
+    // ─────────────────────── M1: 스테이지·오프라인 ───────────────────────
+
+    /// <summary>검증하기 쉬운 값으로 고정한 스테이지. 클리어 목표를 작게 두어 전환을 몇 줄로 재현한다.</summary>
+    public static StageDefinition CreateStage(
+        string stageId,
+        int killsToClear = 3,
+        float multiplier = 1f,
+        int expReward = 10,
+        int goldReward = 5,
+        float baseHp = 100f)
+    {
+        var stage = ScriptableObject.CreateInstance<StageDefinition>();
+        stage.StageId = stageId;
+        stage.KillsToClear = killsToClear;
+        stage.EnemyStatMultiplier = multiplier;
+        stage.ExpReward = expReward;
+        stage.GoldReward = goldReward;
+
+        var enemyStat = ScriptableObject.CreateInstance<EnemyStat>();
+        enemyStat.maxHp = baseHp;
+        stage.EnemyStat = enemyStat;
+
+        return stage;
+    }
+
+    /// <summary>주어진 순서대로 스테이지를 담은 카탈로그.</summary>
+    public static StageCatalog CreateCatalog(params StageDefinition[] stages)
+    {
+        var catalog = ScriptableObject.CreateInstance<StageCatalog>();
+        catalog.Stages = stages;
+        return catalog;
+    }
+
+    public static OfflineRewardConfig CreateOfflineConfig(float maxHours = 8f, float efficiency = 0.5f)
+    {
+        var config = ScriptableObject.CreateInstance<OfflineRewardConfig>();
+        config.MaxOfflineHours = maxHours;
+        config.OfflineEfficiency = efficiency;
+        return config;
+    }
+
+    /// <summary>스테이지가 참조하는 EnemyStat까지 함께 정리한다(테스트가 만든 것이므로).</summary>
+    public static void DestroyStage(StageDefinition stage)
+    {
+        if (stage == null)
+            return;
+
+        Destroy(stage.EnemyStat);
+        Destroy(stage);
+    }
+
     /// <summary>ScriptableObject는 GC 대상이 아니라 명시적으로 파괴해야 에디터 메모리에 누적되지 않는다.</summary>
     public static void Destroy(Object obj)
     {
