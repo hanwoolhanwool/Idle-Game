@@ -768,6 +768,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillButton
   button: {fileID: 1040046421}
   slotIndex: 1
+--- !u!1 &1152476829
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1152476831}
+  - component: {fileID: 1152476830}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1152476830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152476829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63559d8d982fa0047aaa4e24dc506ef0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  playerRoot: {fileID: 2146784840}
+--- !u!4 &1152476831
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152476829}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1184054242 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4355582962646849382, guid: 6ab2551d9603f7342b2215686c21dfd4, type: 3}
@@ -1356,6 +1401,10 @@ MonoBehaviour:
   startBuffs:
   - {fileID: 11400000, guid: b38c78eed6cc52447b505829c4ee431e, type: 2}
   hudBinder: {fileID: 90085648}
+  autoSaveInterval: 60
+  stageCatalog: {fileID: 11400000, guid: d1b6a24578075104a8bbe197b12fac38, type: 2}
+  enemySpawner: {fileID: 2036678070}
+  offlineRewardConfig: {fileID: 11400000, guid: 40619d04365b0fc47b89b5d972e81639, type: 2}
   stateMachineDriver: {fileID: 2146784839}
   movementBehaviour: {fileID: 2146784843}
   loadoutConfig: {fileID: 11400000, guid: f54a07e38091f2940b6f5dfe5ca2c3db, type: 2}
@@ -3139,3 +3188,4 @@ SceneRoots:
   - {fileID: 1744784949}
   - {fileID: 90085649}
   - {fileID: 2036678071}
+  - {fileID: 1152476831}

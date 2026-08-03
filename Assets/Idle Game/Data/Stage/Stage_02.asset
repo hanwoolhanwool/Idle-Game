@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d898582768a010478c023fcd7f7d815, type: 3}
-  m_Name: Stage_01
+  m_Name: Stage_02
   m_EditorClassIdentifier: Assembly-CSharp::StageDefinition
-  StageId: stage_01
+  StageId: stage_02
   EnemyPrefab: {fileID: 54213574662071501, guid: a251a3de48c2d34408a551e897c2bcc1, type: 3}
   EnemyStat: {fileID: 11400000, guid: cf9cc9fa8042da84ca28b32a93d1f692, type: 2}
-  EnemyStatMultiplier: 1
-  KillsToClear: 20
+  EnemyStatMultiplier: 1.4
+  KillsToClear: 30
   ConcurrentEnemies: 5
   SpawnInterval: 1
   SpawnRadius: 8
-  ExpReward: 10
-  GoldReward: 5
+  ExpReward: 14
+  GoldReward: 7
