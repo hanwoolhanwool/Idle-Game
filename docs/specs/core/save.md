@@ -1,6 +1,6 @@
 # 세이브·로드 시스템
 
-> **종류**: 아키텍처 명세 (as-built) · **상태**: 구현 완료 — 런타임 검증(10분 방치 DoD) 대기
+> **종류**: 아키텍처 명세 (as-built) · **상태**: 구현 완료 — 스키마 **v2**(M1 스테이지 진행 반영). 런타임 검증(10분 방치 DoD) 대기
 > **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §5.2 (M0 ④·⑤)
 > **관련 계획서**: [player-data-management-plan.md](../../design/player-data-management-plan.md) (영속화 정본) · [m0-close-the-loop-plan.md](../../design/m0-close-the-loop-plan.md) §6.3
 > **관련 명세**: [progression.md](../player/progression.md) · [player/README.md](../player/README.md)
@@ -21,8 +21,8 @@
 
 | 구분 | 내용 |
 |------|------|
-| **포함** | `ISaveRepository` 계약 · `FileSaveRepository`(JSON + 원자적 쓰기 + 백업 복구) · `SaveService`(수집·복원 조율, 주기 저장, 버전 가드) · `ISaveable` 조각 계약 · `ISaveMigration` 계약(등록 0개 pass-through) · `PlayerSaveData` + `Progression`·`Wallet` 섹션 · `GameManager`의 생명주기 저장 훅 |
-| **미포함(Out of scope)** | `WorldSaveSection`(오프라인 보상 기준 시각, M1) · 인벤토리·장비 섹션(M1) · 세이브 암호화·변조 방지 · 서버 저장 · 클라우드 동기화 · 다중 세이브 슬롯 |
+| **포함** | `ISaveRepository` 계약 · `FileSaveRepository`(JSON + 원자적 쓰기 + 백업 복구) · `SaveService`(수집·복원 조율, 주기 저장, 버전 가드, 마이그레이션 연쇄) · `ISaveable` 조각 계약 · `ISaveMigration` 계약과 첫 구현(`SaveMigration_V1ToV2`) · `PlayerSaveData` + `Progression`·`Wallet`·`World` 섹션 · `GameManager`의 생명주기 저장 훅 |
+| **미포함(Out of scope)** | 인벤토리·장비 섹션(M1 3단계) · 세이브 암호화·변조 방지 · 서버 저장 · 클라우드 동기화 · 다중 세이브 슬롯 |
 
 **암호화를 넣지 않은 이유**: 현재 저장 대상은 로컬 싱글 진행도뿐이고, 변조로 이득을 보는 상대가 자기 자신이다. 서버 권위가 도입되면([server-application-plan.md](../../design/server-application-plan.md)) **검증 주체가 서버로 옮겨가므로**, 지금 클라이언트 암호화에 투자하면 그 작업은 통째로 버려진다.
 
@@ -86,6 +86,7 @@ classDiagram
         +Version int
         +Progression : ProgressionSaveSection
         +Wallet : WalletSaveSection
+        +World : WorldSaveSection
     }
 
     class GameManager {
@@ -221,7 +222,7 @@ flowchart TB
 |------|----------|------|
 | `ISaveRepository` | `bool TryLoad(out PlayerSaveData)` / `void Save(PlayerSaveData)` / `void Delete()` | `FileSaveRepository` |
 | `ISaveable` | `void CaptureState(PlayerSaveData)` / `void RestoreState(PlayerSaveData)` | `PlayerProgressionController` · `PlayerWallet` |
-| `ISaveMigration` | `int FromVersion` / `void Migrate(PlayerSaveData)` | **등록 0개**(계약만 확정) |
+| `ISaveMigration` | `int FromVersion` / `void Migrate(PlayerSaveData)` | `SaveMigration_V1ToV2` — v2에서 첫 구현체가 등록됐다 |
 | `ITickable` | `void Tick(float)` | `SaveService`(주기 저장) |
 
 **`ISaveable`을 도메인마다 두는 이유(SRP·OCP)**: 하나의 거대한 `SaveManager`가 모든 도메인의 내부를 읽어 DTO를 채우면, 새 저장 대상이 생길 때마다 그 클래스가 수정되고 모든 도메인의 내부 구조에 의존하게 된다. 조각 자치 구조에서는 `SaveService`가 인터페이스만 알고, 새 시스템은 **구현 후 등록만** 하면 된다.
@@ -281,10 +282,10 @@ EditMode 테스트는 `Assets/Idle Game/Tests/Editor/SaveSystemTests.cs`에 있�
 
 ## 11. 확장 여지 (지금 만들지 않되 막지 않을 것)
 
-- **오프라인 보상(M1)**: `WorldSaveSection.LastSaveUtcTicks`를 섹션으로 추가하고 `ISaveable` 구현 하나를 등록한다. `SaveService`·`FileSaveRepository`는 무관하다.
+- ~~**오프라인 보상(M1)**~~ **구현됨(2026-08-23)**: `WorldSaveSection`이 스키마 v2로 추가되고 `StageController`가 `ISaveable`로 등록됐다. 예고대로 `SaveService`·`FileSaveRepository`는 한 줄도 바뀌지 않았다([m1-vertical-slice-plan.md](../../design/m1-vertical-slice-plan.md)).
 - **인벤토리(M1)**: 섹션 DTO 추가 + `InventoryController`가 `ISaveable` 구현. 이때 `JsonUtility`의 다형성 한계에 부딪히면 `FileSaveRepository`만 다른 직렬화기로 교체한다.
 - **서버 저장**: `ServerSaveRepository`가 `ISaveRepository`를 구현하고 `PlayerRoot`의 주입 한 줄을 바꾼다. 도메인 코드는 서버의 존재를 모른다.
-- **스키마 버전 2**: `ISaveMigration` 구현 하나를 만들어 `SaveService` 생성자에 넘긴다. 호출 지점은 이미 심겨 있다.
+- ~~**스키마 버전 2**~~ **적용됨(2026-08-23)**: `SaveMigration_V1ToV2` 하나를 만들어 `SaveService` 생성자에 넘겼다. M0에서 심어 둔 호출 지점을 손대지 않고 그대로 썼다.
 
 ## 12. 파일 위치
 
@@ -292,9 +293,9 @@ EditMode 테스트는 `Assets/Idle Game/Tests/Editor/SaveSystemTests.cs`에 있�
 |------|------|------|
 | 계약 | `ISaveRepository` · `ISaveable` | `Scripts/Core/Save/` |
 | 구현 | `FileSaveRepository` · `SaveService` | `Scripts/Core/Save/` |
-| 마이그레이션 | `ISaveMigration` | `Scripts/Core/Save/Migration/` |
-| 모델 | `PlayerSaveData`(+`ProgressionSaveSection`·`WalletSaveSection`·`CurrencyEntry`) | `Scripts/Core/Save/Model/` |
+| 마이그레이션 | `ISaveMigration` · `SaveMigration_V1ToV2` | `Scripts/Core/Save/Migration/` |
+| 모델 | `PlayerSaveData`(+`ProgressionSaveSection`·`WalletSaveSection`·`WorldSaveSection`·`CurrencyEntry`) | `Scripts/Core/Save/Model/` |
 | 생명주기 | `GameManager` | `Scripts/Core/Game/` |
 | 조립 | `PlayerRoot`(주입·등록·`SaveNow`) | `Scripts/Features/Player/Composition/` |
-| 저장 대상 | `PlayerProgressionController` · `PlayerWallet` | `Scripts/Features/Player/Progression/` · `Wallet/` |
-| 테스트 | `SaveSystemTests` | `Tests/Editor/` |
+| 저장 대상 | `PlayerProgressionController` · `PlayerWallet` · `StageController` | `Features/Player/Progression/` · `Wallet/` · `Features/Stage/` |
+| 테스트 | `SaveSystemTests` · `StageTests`(마이그레이션) | `Tests/Editor/` |

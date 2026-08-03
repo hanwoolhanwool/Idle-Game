@@ -32,6 +32,7 @@
 | 문서 | 내용 |
 |------|------|
 | [m0-close-the-loop-plan.md](./design/m0-close-the-loop-plan.md) | **M0 "루프 닫기" 계획서** — 코어 루프의 끊긴 지점(스포너·세이브 등)을 잇는 마일스톤 정본. 다른 계획서들이 이 문서를 상호 참조 |
+| [m1-vertical-slice-plan.md](./design/m1-vertical-slice-plan.md) | **M1 "Vertical Slice" 계획서** — 스테이지 진행(1~5)·오프라인 보상·세이브 스키마 v2. 1·2단계 구현 완료 |
 | [combat-skill-plan.md](./design/combat-skill-plan.md) | 스킬 시스템 구현 계획서(연혁) |
 | [enemy-kill-exp-reward-plan.md](./design/enemy-kill-exp-reward-plan.md) | 적 처치 경험치 보상 구현 계획서(→ as-built: [specs/enemy/kill-exp-reward.md](./specs/enemy/kill-exp-reward.md)) |
 | [player-data-management-plan.md](./design/player-data-management-plan.md) | 플레이어 데이터 관리 체계 구현 계획서 — 소유 데이터(레벨·아이템·장비·위치) 계층 신설 + 세이브/로드 |
@@ -203,7 +204,8 @@ Assets/Idle Game/Scripts/
     │   ├── Input/          입력 소스 구현 ── input.md
     │   ├── Movement/       이동 컨트롤러 ── movement.md
     │   └── Presentation/   HUD, 스킬 버튼 ── presentation.md
-    └── Enemy/              적 유닛·레지스트리·타겟 제공자·처치 보상 ── 명세: specs/enemy/
+    ├── Enemy/              적 유닛·레지스트리·타겟 제공자·스포너·처치 보상 ── 명세: specs/enemy/
+    └── Stage/              스테이지 진행·오프라인 보상 ── 계획: design/m1-vertical-slice-plan.md
 ```
 
 폴더 = 기능(Feature) 단위로 나뉘며, 각 기능은 `Contracts`(인터페이스) / `Core`(핵심 로직) / `Effects`·`States`·`Adapters`(구현) 하위 구조를 따릅니다.
