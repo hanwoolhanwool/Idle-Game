@@ -1,6 +1,6 @@
 # M0 — 루프 닫기(Close the Loop) 구현 계획서
 
-> **종류**: 설계 명세 (TDD) · **상태**: **구현 완료** — 결함 1·2·3 모두 해소. 씬 배선·런타임 검증(10분 방치 DoD) 대기
+> **종류**: 설계 명세 (TDD) · **상태**: **구현 완료** — 결함 1·2·3 모두 해소. 씬 배선 완료, 저장·복원 런타임 확인. **10분 방치 DoD만 미실측**
 > **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../gdd/content-roadmap.md) §5.2 (M0)
 > **관련 명세**: [progression.md](../specs/player/progression.md) · [stats.md](../specs/player/stats.md) · [kill-exp-reward.md](../specs/enemy/kill-exp-reward.md)
 > **관련 계획서**: [player-data-management-plan.md](./player-data-management-plan.md) (세이브·재화의 정본 — 이 문서는 그중 M0 범위만 구현한다)

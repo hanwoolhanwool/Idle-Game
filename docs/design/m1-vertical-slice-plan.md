@@ -382,7 +382,7 @@ PlayerSaveData.World       : WorldSaveSection (신규)
 
 ### 남은 작업
 
-1. **에셋 생성** — `StageDefinition` 5종(`stage_01`~`stage_05`)·`StageCatalog`·`OfflineRewardConfig`. Unity 에디터 필요
-2. **씬 배선** — `PlayerRoot`의 `stageCatalog`·`enemySpawner`·`offlineRewardConfig` 연결
-3. **런타임 검증** — 스테이지 전환·오프라인 보상 실측, `KillsToClear`·`EnemyStatMultiplier` 튜닝
+1. ~~**에셋 생성**~~ **완료(2026-08-23)** — `Stage_01`~`Stage_05`·`StageCatalog`·`OfflineRewardConfig`. 스테이지 추가가 에셋 생성만으로 끝나는 설계가 실제로 확인됐다
+2. ~~**씬 배선**~~ **완료(2026-08-23)** — `PlayerRoot`의 세 참조와 `GameManager` 배치
+3. **런타임 검증** — 스테이지 전환·오프라인 보상 실지급은 **아직 미확인**. 프로젝트가 `runInBackground: 0`이라 에디터가 포커스를 잃으면 게임이 멈춰, 20킬 도달까지 자동 관찰이 되지 않았다(25초에 1킬). 창을 포커스한 채로 관찰하거나 설정을 켜야 한다. `KillsToClear`·`EnemyStatMultiplier` 튜닝도 이때 함께
 4. **as-built 명세** — 검증 후 `specs/stage/`에 신설(현재는 이 계획서가 정본)

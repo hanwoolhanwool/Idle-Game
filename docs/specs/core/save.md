@@ -1,6 +1,6 @@
 # 세이브·로드 시스템
 
-> **종류**: 아키텍처 명세 (as-built) · **상태**: 구현 완료 — 스키마 **v2**(M1 스테이지 진행 반영). 런타임 검증(10분 방치 DoD) 대기
+> **종류**: 아키텍처 명세 (as-built) · **상태**: 구현 완료 — 스키마 **v2**(M1 스테이지 진행 반영). 저장·복원·종료 저장·원자적 쓰기 런타임 확인, 10분 방치 DoD만 미실측
 > **최종 갱신**: 2026-08-23 · **관련 기획서**: [content-roadmap.md](../../gdd/content-roadmap.md) §5.2 (M0 ④·⑤)
 > **관련 계획서**: [player-data-management-plan.md](../../design/player-data-management-plan.md) (영속화 정본) · [m0-close-the-loop-plan.md](../../design/m0-close-the-loop-plan.md) §6.3
 > **관련 명세**: [progression.md](../player/progression.md) · [player/README.md](../player/README.md)
@@ -274,8 +274,8 @@ EditMode 테스트는 `Assets/Idle Game/Tests/Editor/SaveSystemTests.cs`에 있�
 
 | 항목 | 내용 |
 |------|------|
-| **런타임 검증 미완** | 10분 방치 DoD(리스폰 → 누적 → 레벨업 → 재기동 후 유지)를 아직 실측하지 않았다 |
-| **씬 배선 미완** | `GameManager`가 `Dev/SampleScene`에 배치되지 않아, 현재는 주기 저장만 동작하고 종료 시점 저장이 걸리지 않는다 |
+| ~~**런타임 검증 미완**~~ **부분 완료(2026-08-23)** | 신규 시작·보상 지급·v2 저장·재진입 복원·정지 시 재저장·`save.json.bak` 생성을 플레이 모드에서 확인했다. **10분 연속 방치는 미실측** — 프로젝트가 `runInBackground: 0`이라 에디터 창이 포커스를 잃으면 게임이 멈춰, 자동화된 장시간 관찰이 되지 않는다 |
+| ~~**씬 배선 미완**~~ **해소(2026-08-23)** | `GameManager`를 `Dev/SampleScene`에 배치하고 `playerRoot`를 연결했다. 플레이 정지 시 저장이 실제로 일어나는 것을 확인했다 |
 | **재화 식별자 타입** | `CurrencyId`가 문자열(`"gold"`)이다. 통화가 늘면 enum + 커스텀 직렬화로 옮길지 미정(정본 §11) |
 | **변조 방지** | 로컬 JSON은 평문이라 수정이 자유롭다. 서버 권위 도입 시 해소 |
 | **다중 슬롯** | 파일명이 `save.json` 고정. 슬롯이 필요해지면 `FileSaveRepository` 생성자 인자로 확장 |
